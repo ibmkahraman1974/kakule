@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Sadece giriş yapmış (davetiyeyle hesap açmış) aile üyeleri erişebilir.
+    // Dışarıdan hiç kimse okuyamaz/yazamaz.
+    match /sohbetler/{sohbetId}/{tumDosyalar=**} {
+      // Okuma: giriş yapmış her aile üyesi.
+      allow read: if request.auth != null;
+      // Yazma: giriş yapmış üye + tek dosya en fazla 25 MB.
+      allow write: if request.auth != null
+                   && request.resource.size < 25 * 1024 * 1024;
+    }
+  }
+}

@@ -1,0 +1,28 @@
+# ============================================================
+# KAKULE — .gitignore
+# ============================================================
+# Bu dosyalar KESİNLİKLE GitHub'a (public repo'da özellikle) yüklenmemeli.
+# Yanlışlıkla `git add .` yapsanız bile Git bunları otomatik atlar.
+# ============================================================
+
+# Firebase servis hesabı anahtarı — "Generate new private key" ile indirdiğiniz
+# .json dosyası. Bu dosya tüm veritabanınıza tam erişim sağlar.
+# (Zaten sadece Cloudflare Worker secret'larına yapıştırılıyor, repoya hiç
+# girmemeli — ama nereye indirirseniz indirin, isim eşleşirse burada yakalanır.)
+*firebase-adminsdk*.json
+serviceAccountKey.json
+service-account*.json
+
+# Cloudflare wrangler ile giriş yaparsanız oluşabilecek yerel kimlik dosyaları
+.wrangler/
+.dev.vars
+
+# İşletim sistemi / editör çöp dosyaları
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Eğer ileride npm ile bir araç eklerseniz
+node_modules/

@@ -1,0 +1,290 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function girisYapmis() {
+      return request.auth != null;
+    }
+
+    // Bu kullanıcının kendi profil belgesindeki rolü "admin" mi?
+    // (Sadece kendi belgesi okunuyor, ekstra Firestore okuma maliyeti var
+    // ama bu, sahte admin iddialarına karşı tek güvenilir yöntem.)
+    function adminMi() {
+      return girisYapmis() &&
+        get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.rol == 'admin';
+    }
+
+    // Kullanıcılar: herkes (giriş yapmış aile üyesi) listeyi görebilir.
+    // - Kendi profilini değiştirebilir ama KENDİ "rol" ve "dondurulmus"
+    //   alanlarını DEĞİŞTİREMEZ (rol yükseltme / kendini-dondur açığını kapatır).
+    // - Admin, BAŞKA bir üyenin SADECE "rol" ve "dondurulmus" alanlarını
+    //   değiştirebilir (dondurma/aktif etme, admin yapma/admin'likten alma).
+    // - Admin, kendisi dışında herhangi bir üyeyi silebilir (kendi hesabını
+    //   silme zaten "Hesabı sil" akışından, kendi auth.uid==uid şartıyla geçer).
+    match /kullanicilar/{uid} {
+      allow read: if girisYapmis();
+
+      allow create: if girisYapmis() && request.auth.uid == uid
+        // Kuruluş anahtarı ("ailem-2026-ocak" vb.) sadece AİLENİN İLK hesabı
+        // için admin rolü vermeli. Bunu garanti etmek için: rol=="admin" ile
+        // kayıt olmaya çalışan biri, SADECE /ayarlar/kurulus belgesi henüz
+        // oluşturulmamışsa (yani daha önce hiç admin kaydı tamamlanmamışsa)
+        // başarılı olabilir. İlk admin oluştuktan sonra app.js bu belgeyi
+        // oluşturup kilitliyor — bundan sonra kuruluş anahtarı GitHub'da
+        // görünür olsa bile yeni bir admin hesabı açmaya yaramaz.
+        && (request.resource.data.rol != 'admin' || !exists(/databases/$(database)/documents/ayarlar/kurulus))
+        // DAVET DOĞRULAMASI (sistemin gerçek kapısı): "admin" olmayan her yeni
+        // üye, geçerli ve KENDİ uid'i tarafından tüketilmiş bir davet kodu
+        // taşımak ZORUNDA. app.js kayıt akışı, kullanıcı belgesini yazmadan
+        // hemen önce davetler/{kod} belgesini { kullanildi:true, kullananUid:uid }
+        // yapıyor; burada onu doğruluyoruz. Bu koşul olmadan biri, Auth'ta hesap
+        // açıp doğrudan bu belgeyi yazarak davetsiz üye olabilirdi.
+        && (
+          request.resource.data.rol == 'admin'
+          || (
+            request.resource.data.davetKodu is string
+            && exists(/databases/$(database)/documents/davetler/$(request.resource.data.davetKodu))
+            && get(/databases/$(database)/documents/davetler/$(request.resource.data.davetKodu)).data.get('kullananUid', '') == uid
+          )
+        );
+
+      allow update: if girisYapmis() && (
+        (request.auth.uid == uid
+          && (!('rol' in request.resource.data) || request.resource.data.rol == resource.data.rol)
+          && (!('dondurulmus' in request.resource.data) || request.resource.data.dondurulmus == resource.data.get('dondurulmus', false)))
+        ||
+        (adminMi() && request.auth.uid != uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rol', 'dondurulmus']))
+      );
+
+      allow delete: if girisYapmis() && (request.auth.uid == uid || (adminMi() && request.auth.uid != uid));
+    }
+
+    // /ayarlar altındaki belgeler: giriş yapmış (yani davetiyeyle katılmış)
+    // her aile üyesi okuyabilir, ama yabancılar (GitHub'daki public koda bakan
+    // biri dahil) OKUYAMAZ — çünkü bu veriler GİT REPOSUNDA değil, sadece
+    // Firestore'da duruyor ve Firestore'a erişim kimlik doğrulaması gerektiriyor.
+    // Bu yüzden burada, kod dosyalarına asla koyulmaması gereken (ama yine de
+    // istemci tarafında otomatik kullanılması gereken) değerleri saklıyoruz:
+    //  - "kurulus": tek seferlik kuruluş anahtarı kilidi (bkz. aşağıdaki not).
+    //  - "workerAnahtar": Cloudflare Worker paylaşım anahtarı — admin bunu
+    //    Firebase Console'dan elle oluşturur (bkz. KURULUM.md), client-side
+    //    create izni YOK, sadece admin (Console üzerinden, kuralları bypass
+    //    ederek) yazabilir.
+    //
+    // Tek seferlik "kuruluş kilidi": ilk admin hesabı oluştuktan hemen sonra
+    // app.js bu belgeyi { kullanildi: true } olarak oluşturur. Bir belge bir
+    // kez oluşturulduktan sonra Firestore "create" kuralı bir daha asla
+    // tetiklenmez (belge zaten var) — yani bu belge oluşunca kuruluş anahtarı
+    // kalıcı olarak devre dışı kalır, kimse onu silip sıfırlayamaz.
+    match /ayarlar/{belgeId} {
+      allow read: if girisYapmis();
+      allow create: if girisYapmis() && belgeId == 'kurulus' && request.resource.data.kullanildi == true;
+      allow update, delete: if false;
+    }
+
+    // Davetler: giriş yapmamış biri SADECE tekil bir kodu (ID'sini bilerek)
+    // okuyabilir — kayıt formunun kodu doğrulaması için. Kod ID'si rastgele
+    // 8 karakter olduğundan brute force pratik değil.
+    // - update: kodu tüketen kişi SADECE kullanildi/kullananUid/kullananAd
+    //   alanlarını yazabilir (başka alan enjekte edemez) ve kullananUid'i
+    //   KENDİ uid'i olmak zorunda — böylece davet başkasının adına tüketilemez.
+    // - create/list: yalnızca admin (dondurulmuş/yetkisiz üye davet üretemez
+    //   veya tüm kodları listeleyip sızdıramaz).
+    match /davetler/{kod} {
+      allow get: if true;
+      allow update: if !resource.data.get('kullanildi', false)
+                    && request.resource.data.kullanildi == true
+                    && request.resource.data.get('kullananUid', '') == request.auth.uid
+                    && request.resource.data.diff(resource.data)
+                         .affectedKeys().hasOnly(['kullanildi', 'kullananUid', 'kullananAd']);
+      allow create: if adminMi();
+      allow list, delete: if adminMi();
+    }
+
+    // Doğum günü kutlama kayıtları: bir kişi+gün için yalnızca tek kayıt
+    // oluşturulabilir (belge zaten varsa "create" otomatik başarısız olur),
+    // böylece aynı gün birden çok kişi uygulamayı açsa bile kutlama tekrarlanmaz.
+    match /dogumGunuKutlamalari/{kutlamaId} {
+      allow read: if girisYapmis();
+      allow create: if girisYapmis();
+      allow update, delete: if false;
+    }
+
+    // Sohbetler: sadece üyesi olduğun sohbetleri okuyup/yazabilirsin.
+    // update: üye olan biri son mesaj/okunmamış/başlık gibi alanları
+    //   güncelleyebilir; ancak "uyeler" listesini yalnızca sohbeti oluşturan
+    //   kişi değiştirebilir VE hiç kimse (oluşturan dahil) mevcut bir üyeyi
+    //   listeden çıkaramaz — yani sadece üye EKLENEBİLİR, çıkarılamaz.
+    //   (Sıradan bir üyenin başkasını gruptan atmasını / kendini gizlice
+    //   eklemesini engeller.)
+    match /sohbetler/{sohbetId} {
+      allow read: if girisYapmis() && request.auth.uid in resource.data.uyeler;
+      allow create: if girisYapmis() && request.auth.uid in request.resource.data.uyeler;
+      allow update: if girisYapmis() && request.auth.uid in resource.data.uyeler
+        && (
+          // "uyeler" hiç değişmiyorsa (normal mesaj/okunmamış güncellemesi) serbest.
+          request.resource.data.uyeler == resource.data.uyeler
+          // Kurucu veya admin, üye ekleyebilir/çıkarabilir (grup yönetimi).
+          || resource.data.get('olusturanUid', '') == request.auth.uid
+          || adminMi()
+          // Herhangi bir üye SADECE KENDİNİ çıkarabilir (gruptan ayrılma):
+          // çağıran yeni listede yok, yeni liste eskinin bir alt kümesi ve
+          // tam olarak bir kişi (çağıran) eksilmiş.
+          || (
+            !(request.auth.uid in request.resource.data.uyeler)
+            && request.resource.data.uyeler.hasOnly(resource.data.uyeler)
+            && request.resource.data.uyeler.size() == resource.data.uyeler.size() - 1
+          )
+        );
+      allow delete: if false;
+
+      match /mesajlar/{mesajId} {
+        allow read: if girisYapmis()
+          && request.auth.uid in get(/databases/$(database)/documents/sohbetler/$(sohbetId)).data.uyeler;
+        allow create: if girisYapmis()
+          && request.auth.uid in get(/databases/$(database)/documents/sohbetler/$(sohbetId)).data.uyeler
+          && request.resource.data.gonderenUid == request.auth.uid
+          // Dondurulmuş (admin tarafından askıya alınmış) bir hesap mesaj atamaz.
+          && get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data.get('dondurulmus', false) != true
+          // Temel kötüye kullanım/spam koruması: tek bir mesaj metni ya da dosya
+          // adı aşırı büyük olamaz (istemci tarafında zaten 4000 karaktere
+          // sınırlanıyor; burası bunu sunucu tarafında da garanti eder).
+          && (!('metin' in request.resource.data) || request.resource.data.metin.size() <= 4000)
+          && (!('dosyaAd' in request.resource.data) || request.resource.data.dosyaAd.size() <= 300)
+          // Yanıtlanan mesaj alıntısı: sadece makul boyutta bir özet taşıyabilir.
+          && (!('yanitlanan' in request.resource.data) || request.resource.data.yanitlanan.ozet.size() <= 200)
+          // Statüye verilen yanıt/tepki alıntısı: aynı şekilde makul boyutta olmalı.
+          && (!('statuYaniti' in request.resource.data) || request.resource.data.statuYaniti.ozet.size() <= 200);
+        // "görüldü" tikleri: herhangi bir sohbet üyesi sadece "gorenler" alanını
+        // güncelleyebilir. "tepkiler" (emoji reaksiyonu): herhangi bir sohbet üyesi
+        // güncelleyebilir, ama SADECE kendi uid'ine karşılık gelen anahtarı
+        // değiştirebilir (başkasının tepkisini değiştiremez/silemez).
+        // Mesaj içeriğini (silme: "silindi" alanı) sadece mesajı gönderen kişi
+        // her zaman değiştirebilir. Mesaj METNİNİ (gerçek düzenleme) ise sadece
+        // gönderen kişi VE sadece mesaj gönderildikten sonraki 15 DAKİKA içinde
+        // değiştirebilir (istemci tarafındaki 15 dk kısıtının sunucu tarafı
+        // garantisi — tarayıcı konsolundan doğrudan istek atılsa bile geçerli).
+        allow update: if girisYapmis()
+          && request.auth.uid in get(/databases/$(database)/documents/sohbetler/$(sohbetId)).data.uyeler
+          && (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['gorenler'])
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tepkiler'])
+                && request.resource.data.tepkiler.diff(resource.data.get('tepkiler', {})).affectedKeys().hasOnly([request.auth.uid]))
+            // Yıldızlama: herhangi bir sohbet üyesi SADECE "yildizlayanlar" dizisini
+            // değiştirebilir (kendi favori işareti; düşük riskli).
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['yildizlayanlar'])
+            || (request.auth.uid == resource.data.gonderenUid
+                && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['metin'])
+                    || (request.resource.data.metin.size() <= 4000
+                        && request.time < resource.data.zaman + duration.value(15, 'm'))))
+          );
+        // Silme: normalde kapalı; ancak KAYBOLAN mesajlar için — süresi
+        // (sonKullanmaMs) geçmiş mesajları herhangi bir sohbet üyesi silebilir.
+        allow delete: if girisYapmis()
+          && request.auth.uid in get(/databases/$(database)/documents/sohbetler/$(sohbetId)).data.uyeler
+          && resource.data.get('sonKullanmaMs', 0) > 0
+          && resource.data.sonKullanmaMs <= request.time.toMillis();
+      }
+    }
+
+    // Statüsler (24 saatlik paylaşım): herkes görebilir, sadece sahibi oluşturur,
+    // herkes "görenler" listesini güncelleyebilir (görüldü işareti için).
+    // Silme: sahibi her zaman silebilir; 24 saati dolmuş bir statüsü ise
+    // herhangi bir aile üyesi silebilir (istemci taraflı otomatik temizlik için —
+    // sunucusuz/ücretsiz kurulumda zamanlanmış fonksiyon olmadığından, eski
+    // statüsler herhangi bir üyenin uygulamayı açması sırasında süpürülür).
+    match /statusler/{statuId} {
+      allow read: if girisYapmis();
+      allow create: if girisYapmis() && request.auth.uid == request.resource.data.uid;
+      allow update: if girisYapmis();
+      allow delete: if girisYapmis()
+        && (request.auth.uid == resource.data.uid
+            || request.time > resource.data.zaman + duration.value(24, 'h'));
+    }
+
+    // Aramalar: sadece arayan veya aranan taraf erişebilir.
+    // delete: taraflar bitmiş/cevapsız/reddedilmiş aramaları temizleyebilir
+    //   (SDP offer/answer IP sızdırdığı ve belgeler süresiz biriktiği için
+    //   arama kapanınca app.js bunları siler). Aktif ("cagiriliyor"/"kabul")
+    //   bir arama silinemez.
+    match /aramalar/{aramaId} {
+      allow read: if girisYapmis()
+        && (request.auth.uid == resource.data.arayanUid || request.auth.uid == resource.data.arananUid);
+      allow create: if girisYapmis() && request.auth.uid == request.resource.data.arayanUid;
+      allow update: if girisYapmis()
+        && (request.auth.uid == resource.data.arayanUid || request.auth.uid == resource.data.arananUid);
+      allow delete: if girisYapmis()
+        && (request.auth.uid == resource.data.arayanUid || request.auth.uid == resource.data.arananUid)
+        && resource.data.get('durum', '') in ['bitti', 'cevapsiz', 'red'];
+
+      match /{altKoleksiyon}/{belgeId} {
+        allow read, create, delete: if girisYapmis()
+          && (request.auth.uid == get(/databases/$(database)/documents/aramalar/$(aramaId)).data.arayanUid
+              || request.auth.uid == get(/databases/$(database)/documents/aramalar/$(aramaId)).data.arananUid);
+        allow update: if false;
+      }
+    }
+
+    // ---------- BULUŞMA ----------
+    // Canlı konum en hassas veridir. Bir buluşmayı yalnızca BAŞLATAN veya DAVETLİ
+    // biri görebilir; canlı konumları (katilimcilar alt-koleksiyonu) yalnızca bu
+    // taraflar okuyabilir ve herkes SADECE KENDİ konum belgesini yazabilir.
+    // Buluşma bittiğinde/kapatıldığında istemci kendi konum belgesini siler.
+    function bulusmaTarafiMi(bId) {
+      let b = get(/databases/$(database)/documents/bulusmalar/$(bId)).data;
+      return request.auth != null
+        && (request.auth.uid == b.baslatanUid || (request.auth.uid in b.davetliler));
+    }
+    match /bulusmalar/{bulusmaId} {
+      allow read: if girisYapmis()
+        && (request.auth.uid == resource.data.baslatanUid
+            || (request.auth.uid in resource.data.davetliler));
+      allow create: if girisYapmis()
+        && request.auth.uid == request.resource.data.baslatanUid
+        && request.resource.data.durum == 'aktif';
+      // Durum güncellemesi: taraflar 'saglandi'/'bitti' yazabilir; başkası dokunamaz.
+      allow update: if girisYapmis()
+        && (request.auth.uid == resource.data.baslatanUid
+            || (request.auth.uid in resource.data.davetliler))
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['durum', 'saglanmaZamani']);
+      allow delete: if girisYapmis() && request.auth.uid == resource.data.baslatanUid;
+
+      // Canlı konumlar: sadece taraflar okur; herkes yalnız kendi belgesini yazar/siler.
+      match /katilimcilar/{uid} {
+        allow read: if bulusmaTarafiMi(bulusmaId);
+        allow create, update, delete: if girisYapmis()
+          && request.auth.uid == uid
+          && bulusmaTarafiMi(bulusmaId);
+      }
+    }
+
+    // ---------- DEFTER (paylaşılan yapılacaklar listeleri) ----------
+    // Tam ortak model: listenin üyeleri her şeyi okuyabilir; her üye görev
+    // ekler, düzenler, siler, tamamlar. Üyelik değişimini yalnız oluşturan yapar.
+    function listeUyesiMi(listeId) {
+      return request.auth != null
+        && request.auth.uid in get(/databases/$(database)/documents/listeler/$(listeId)).data.uyeler;
+    }
+    match /listeler/{listeId} {
+      allow read: if girisYapmis() && request.auth.uid in resource.data.uyeler;
+      allow create: if girisYapmis()
+        && request.auth.uid == request.resource.data.olusturanUid
+        && request.auth.uid in request.resource.data.uyeler;
+      allow update: if girisYapmis() && request.auth.uid in resource.data.uyeler
+        && (
+          request.resource.data.uyeler == resource.data.uyeler
+          || resource.data.olusturanUid == request.auth.uid
+        );
+      allow delete: if girisYapmis() && request.auth.uid in resource.data.uyeler;
+
+      match /gorevler/{gorevId} {
+        allow read: if listeUyesiMi(listeId);
+        allow create: if listeUyesiMi(listeId)
+          && request.auth.uid == request.resource.data.ekleyenUid;
+        allow update, delete: if listeUyesiMi(listeId);
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+name = "kakule-push"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Her gün 06:00 UTC = 09:00 Türkiye saati (Türkiye UTC+3 sabit, yaz/kış saati uygulamıyor)
+[triggers]
+crons = ["0 6 * * *"]
+
+# Aşağıdaki gizli değerleri (secret) "wrangler secret put DEGISKEN_ADI" komutuyla
+# ya da Cloudflare Dashboard > Worker > Settings > Variables and Secrets kısmından
+# eklemeniz gerekiyor. KURULUM.md'deki "Günlük Özet Bildirimi Kurulumu" bölümüne bakın.
+#
+# Gerekli secret'lar:
+#   VAPID_PUBLIC_KEY        (zaten mevcut push kurulumunda var)
+#   VAPID_PRIVATE_KEY       (zaten mevcut push kurulumunda var)
+#   VAPID_SUBJECT           (zaten mevcut push kurulumunda var)
+#   FIREBASE_PROJECT_ID     (Firebase proje ID'niz)
+#   FIREBASE_CLIENT_EMAIL   (servis hesabı e-postası)
+#   FIREBASE_PRIVATE_KEY    (servis hesabı özel anahtarı)
+#
+# İsteğe bağlı:
+#   RSS_KAYNAK_URL           (varsayılan: https://www.ntv.com.tr/gundem.rss)
