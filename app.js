@@ -451,11 +451,13 @@ onAuthStateChanged(auth, async (user) => {
 
     sakla($("auth-sayfa"));
     goster($("uygulama"));
+    sakla($("baslangic-yukleniyor"));
     uygulamayiBaslat();
   } else {
     suankiKullanici = null;
     goster($("auth-sayfa"));
     sakla($("uygulama"));
+    sakla($("baslangic-yukleniyor"));
     if (mesajAbonelik) mesajAbonelik();
     if (sohbetlerAbonelik) sohbetlerAbonelik();
     if (kendiProfilAbonelik) { kendiProfilAbonelik(); kendiProfilAbonelik = null; }
