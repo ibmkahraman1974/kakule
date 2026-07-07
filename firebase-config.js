@@ -43,7 +43,7 @@ export const VAPID_PUBLIC_KEY = "BKDsF7BHYzuQ0L8wEwwDC5YXYGh3m8lC_b2KyLxw-YlL-Hv
 
 // CF_WORKER_URL: Cloudflare Worker'ı yayınladıktan sonra aldığınız adresi buraya yapıştırın.
 // Örnek: "https://kakule-push.kullaniciadi.workers.dev"
-export const CF_WORKER_URL = "BURAYA_WORKER_ADRESI";
+export const CF_WORKER_URL = "https://kakule-push.kakule.workers.dev";
 
 // NOT: Worker'ı yabancılara karşı koruyan paylaşım anahtarı BURADA DEĞİL —
 // bilerek bu dosyaya (yani GitHub'a) konulmadı, çünkü bu dosya herkese açık.
