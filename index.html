@@ -28,8 +28,19 @@
 </head>
 <body>
 
+<!-- ===================== BAŞLANGIÇ YÜKLENİYOR EKRANI =====================
+     Firebase'in "bu kullanıcı zaten giriş yapmış mı?" kontrolü (onAuthStateChanged)
+     IndexedDB'den okuduğu için bir miktar sürüyor. O süre boyunca giriş ekranını
+     GÖSTERMEK yerine nötr bir yükleniyor ekranı gösteriyoruz — böylece zaten giriş
+     yapmış kullanıcı, açılışta bir anlığına giriş formunu "titrek" görmüyor.
+     app.js, onAuthStateChanged sonucu belli olunca bu ekranı gizleyip doğru
+     ekranı (giriş formu ya da uygulama) gösteriyor. -->
+<div id="baslangic-yukleniyor" class="baslangic-yukleniyor">
+  <img class="auth-logo" src="icons/icon-seffaf-512.png" alt="Kakule" />
+</div>
+
 <!-- ===================== GİRİŞ / KAYIT EKRANI ===================== -->
-<div id="auth-sayfa" class="auth-sayfa">
+<div id="auth-sayfa" class="auth-sayfa gizli">
   <div class="auth-kart">
     <img class="auth-logo" src="icons/icon-seffaf-512.png" alt="Kakule" />
     <img class="auth-wordmark" src="icons/kakule-wordmark.png" alt="Kakule" />
