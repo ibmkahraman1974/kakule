@@ -218,18 +218,29 @@
           <button class="icon-btn" id="goruntulu-arama-btn" title="Görüntülü ara">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
           </button>
-          <button class="icon-btn" id="bulusma-btn" title="Buluşma başlat">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-          </button>
-          <button class="icon-btn gizli" id="grup-uyeler-btn" title="Grup üyeleri">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0114 0v1"/></svg>
-          </button>
-          <button class="icon-btn" id="medya-galeri-btn" title="Medya galerisi">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          </button>
-          <button class="icon-btn" id="mesaj-arama-btn" title="Sohbette ara">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          </button>
+          <div class="ust-menu-wrap">
+            <button class="icon-btn" id="sohbet-menu-btn" title="Diğer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+            </button>
+            <div id="sohbet-menu-dropdown" class="ust-menu-dropdown gizli">
+              <button class="ust-menu-oge" id="bulusma-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                Buluşma başlat
+              </button>
+              <button class="ust-menu-oge gizli" id="grup-uyeler-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0114 0v1"/></svg>
+                Grup üyeleri
+              </button>
+              <button class="ust-menu-oge" id="medya-galeri-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                Medya galerisi
+              </button>
+              <button class="ust-menu-oge" id="mesaj-arama-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                Sohbette ara
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
