@@ -5696,6 +5696,47 @@ $("sohbet-yonetim-sessize")?.addEventListener("click", sohbetSessizeToggle);
 $("sohbet-yonetim-sil")?.addEventListener("click", sohbetSilBenimIcin);
 
 // ============================================================
+// SOHBET BAŞLIĞI "DİĞER" (⋮) AÇILIR MENÜSÜ
+// ============================================================
+// Sohbet üst barındaki ikon sayısını azaltmak için Buluşma başlat /
+// Grup üyeleri / Medya galerisi / Sohbette ara butonları buraya
+// taşındı. Bunlar proxy değil — gerçek butonların kendisi; sadece
+// DOM'da bu menünün içine taşındılar, id'leri ve mevcut event
+// listener'ları (mesaj-arama-btn, medya-galeri-btn, grup-uyeler-btn,
+// bulusma-btn) hiç değişmeden aynen çalışmaya devam ediyor.
+(function sohbetMenuKur() {
+  const buton = $("sohbet-menu-btn");
+  const menu = $("sohbet-menu-dropdown");
+  if (!buton || !menu) return;
+
+  function menuyuAc() { menu.classList.remove("gizli"); }
+  function menuyuKapat() { menu.classList.add("gizli"); }
+  function menuyuToggle(e) {
+    e.stopPropagation();
+    if (menu.classList.contains("gizli")) menuyuAc();
+    else menuyuKapat();
+  }
+
+  buton.addEventListener("click", menuyuToggle);
+
+  // Dışarı tıklayınca veya Esc'e basınca kapat.
+  document.addEventListener("click", (e) => {
+    if (!menu.classList.contains("gizli") && !menu.contains(e.target) && e.target !== buton) {
+      menuyuKapat();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") menuyuKapat();
+  });
+
+  // Menü içindeki herhangi bir ögeye tıklanınca (asıl işlev zaten kendi
+  // listener'ında çalışır), menüyü de kapat.
+  menu.addEventListener("click", (e) => {
+    if (e.target.closest(".ust-menu-oge")) menuyuKapat();
+  });
+})();
+
+// ============================================================
 // ÜST "DİĞER" (⋮) AÇILIR MENÜSÜ
 // ============================================================
 // Üst bardaki ikon sayısını azaltmak için Profilim / Davetiye oluştur /
