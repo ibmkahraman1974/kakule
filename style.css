@@ -349,6 +349,41 @@ input, textarea {
 .icon-btn:hover { background: var(--kenar); }
 .icon-btn svg { width: 18px; height: 18px; }
 
+.ust-menu-wrap { position: relative; }
+.ust-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 210px;
+  background: var(--yuzey);
+  border: 1px solid var(--kenar);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ust-menu-oge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--metin);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.ust-menu-oge svg { width: 17px; height: 17px; flex-shrink: 0; }
+.ust-menu-oge:hover { background: var(--kenar); }
+.ust-menu-oge.ust-menu-tehlike { color: var(--acil); }
+.ust-menu-ayrac { height: 1px; background: var(--kenar); margin: 4px 6px; }
+
 #sos-btn {
   background: rgba(229,72,77,.14);
   color: var(--acil);
