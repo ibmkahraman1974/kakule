@@ -1,7 +1,7 @@
 // ============================================================
 // KAKULE — Uygulama Mantığı
 // ============================================================
-import { firebaseConfig, KURULUS_ANAHTARI, CLOUDINARY_CLOUD, CLOUDINARY_PRESET, VAPID_PUBLIC_KEY, CF_WORKER_URL, TURN_URL, TURN_KULLANICI, TURN_SIFRE } from "./firebase-config.js";
+import { firebaseConfig, KURULUS_ANAHTARI, CLOUDINARY_CLOUD, CLOUDINARY_PRESET, VAPID_PUBLIC_KEY, CF_WORKER_URL, TURN_URL, TURN_KULLANICI, TURN_SIFRE } from "./firebase-config.js?v=2";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
