@@ -225,7 +225,7 @@ async function firestoreTokenAl(env) {
   const header = { alg: "RS256", typ: "JWT" };
   const claim = {
     iss: env.FIREBASE_CLIENT_EMAIL,
-    scope: "https://www.googleapis.com/auth/datastore.readonly",
+    scope: "https://www.googleapis.com/auth/datastore",
     aud: "https://oauth2.googleapis.com/token",
     iat: simdi,
     exp: simdi + 3600
