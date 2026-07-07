@@ -357,7 +357,11 @@
           </button>
           <button id="ek-menu-konum" class="ek-menu-ogesi">
             <span class="ek-menu-ikon" style="background:#E8A33D;"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-            Konum
+            Şu anki konumum
+          </button>
+          <button id="ek-menu-konum-sec" class="ek-menu-ogesi">
+            <span class="ek-menu-ikon" style="background:#4C9A6A;"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+            Haritadan konum seç
           </button>
         </div>
 
@@ -920,6 +924,33 @@
   <div class="statu-kendi-bilgi-cubugu gizli" id="statu-kendi-bilgi-cubugu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
     <span id="statu-gorenler-sayisi">0 kişi gördü</span>
+  </div>
+</div>
+
+<!-- Haritadan konum seçme (WhatsApp tarzı: harita sürüklenir, iğne ortada sabit kalır) -->
+<div id="modal-konum-sec" class="modal-perde gizli">
+  <div class="modal-kutu konum-sec-kutu">
+    <div class="konum-sec-arama-cubuk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="konum-sec-arama-input" placeholder="Bir yer, adres ara…" autocomplete="off" />
+      <button id="konum-sec-kapat-btn" class="icon-btn" title="Kapat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="konum-sec-sonuclar" class="konum-sec-sonuclar gizli"></div>
+    <div class="konum-sec-harita-sarma">
+      <div id="konum-sec-harita" class="konum-sec-harita"></div>
+      <div class="konum-sec-pin">
+        <svg viewBox="0 0 24 24" width="34" height="34"><path fill="#E8A33D" stroke="#8a5a12" stroke-width="1" d="M12 2C8 2 5 5 5 9c0 6 7 13 7 13s7-7 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>
+      </div>
+      <button id="konum-sec-konumum-btn" class="konum-sec-konumum-btn" title="Şu anki konumuma git">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
+    </div>
+    <div class="konum-sec-alt">
+      <div id="konum-sec-adres" class="konum-sec-adres">Konumu seçmek için haritayı sürükle…</div>
+      <button class="btn-ana" id="konum-sec-gonder-btn" style="width:100%;margin-top:10px;">📍 Bu konumu gönder</button>
+    </div>
   </div>
 </div>
 
