@@ -4113,11 +4113,15 @@ async function acilDurumGonder(ayar, konum) {
 
 function adminButonuGuncelle() {
   const btn = $("admin-panel-btn");
-  if (!btn) return;
-  if (suankiKullanici?.rol === "admin") {
-    btn.classList.remove("gizli");
-  } else {
-    btn.classList.add("gizli");
+  const dropdownOge = $("ust-menu-admin");
+  const admin = suankiKullanici?.rol === "admin";
+  if (btn) {
+    if (admin) btn.classList.remove("gizli");
+    else btn.classList.add("gizli");
+  }
+  if (dropdownOge) {
+    if (admin) dropdownOge.classList.remove("gizli");
+    else dropdownOge.classList.add("gizli");
   }
 }
 
@@ -5690,6 +5694,55 @@ $("liste-sil-btn")?.addEventListener("click", async () => {
 $("sohbet-yonetim-sabitle")?.addEventListener("click", sohbetSabitleToggle);
 $("sohbet-yonetim-sessize")?.addEventListener("click", sohbetSessizeToggle);
 $("sohbet-yonetim-sil")?.addEventListener("click", sohbetSilBenimIcin);
+
+// ============================================================
+// ÜST "DİĞER" (⋮) AÇILIR MENÜSÜ
+// ============================================================
+// Üst bardaki ikon sayısını azaltmak için Profilim / Davetiye oluştur /
+// Yeni grup / Admin Paneli / Çıkış yap butonları burada toplanıyor. Bu
+// menüdeki her öge, DOM'da hâlâ duran ama CSS ile gizlenmiş asıl butona
+// (örn. #profil-duzenle-btn) proxy bir tıklama yapıyor — böylece o
+// butonlara bağlı mevcut event listener'lar değişmeden çalışmaya devam ediyor.
+(function ustMenuKur() {
+  const buton = $("ust-menu-btn");
+  const menu = $("ust-menu-dropdown");
+  if (!buton || !menu) return;
+
+  function menuyuAc() { menu.classList.remove("gizli"); }
+  function menuyuKapat() { menu.classList.add("gizli"); }
+  function menuyuToggle(e) {
+    e.stopPropagation();
+    if (menu.classList.contains("gizli")) menuyuAc();
+    else menuyuKapat();
+  }
+
+  buton.addEventListener("click", menuyuToggle);
+
+  // Dışarı tıklayınca veya Esc'e basınca kapat.
+  document.addEventListener("click", (e) => {
+    if (!menu.classList.contains("gizli") && !menu.contains(e.target) && e.target !== buton) {
+      menuyuKapat();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") menuyuKapat();
+  });
+
+  // Her öge, gerçek (gizli) butona proxy tıklama yapıp menüyü kapatır.
+  const eslesmeler = [
+    ["ust-menu-profil", "profil-duzenle-btn"],
+    ["ust-menu-davet", "davet-olustur-btn"],
+    ["ust-menu-yeni-grup", "yeni-grup-btn"],
+    ["ust-menu-admin", "admin-panel-btn"],
+    ["ust-menu-cikis", "cikis-btn"]
+  ];
+  eslesmeler.forEach(([dropdownId, gercekId]) => {
+    $(dropdownId)?.addEventListener("click", () => {
+      menuyuKapat();
+      $(gercekId)?.click();
+    });
+  });
+})();
 $("sohbet-yonetim-medya")?.addEventListener("click", () => {
   sakla($("modal-sohbet-yonetim"));
   // Mevcut (lightbox'lı) medya galerisini aç
