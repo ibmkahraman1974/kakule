@@ -784,7 +784,7 @@ function okunmamisToplamHesapla(liste) {
 }
 
 function bildirimRozetiGuncelle() {
-  const toplam = okunmamisToplamHesapla(sohbetlerCache);
+  const toplam = okunmamisToplamHesapla(sohbetlerCache.filter((s) => !sohbetGizliMi(s)));
 
   const sekmeRozet = document.querySelector('.sekme[data-sekme="sohbetler"] .sekme-rozet');
   if (sekmeRozet) {
@@ -858,14 +858,17 @@ function sohbetListesiCiz() {
   const kapsayici = $("sohbet-listesi");
   kapsayici.innerHTML = "";
 
-  if (sohbetlerCache.length === 0) {
+  // "Sohbeti sil" ile kendi listesinden gizlenen sohbetleri çıkar (bkz. sohbetGizliMi).
+  const gorunurSohbetler = sohbetlerCache.filter((s) => !sohbetGizliMi(s));
+
+  if (gorunurSohbetler.length === 0) {
     kapsayici.innerHTML = `<div class="bos-liste">Henüz sohbet yok.<br>"Aile Üyeleri" sekmesinden birine yaz veya yeni grup kur.</div>`;
     return;
   }
 
   // Sabitlenen sohbetler üstte. Kullanıcının kendi sabit listesi profilinde tutulur.
   const sabitler = tumUyeler[suankiKullanici.uid]?.sabitlenenSohbetler || [];
-  const sirali = [...sohbetlerCache].sort((a, b) => {
+  const sirali = [...gorunurSohbetler].sort((a, b) => {
     const aSabit = sabitler.includes(a.id) ? 1 : 0;
     const bSabit = sabitler.includes(b.id) ? 1 : 0;
     if (aSabit !== bSabit) return bSabit - aSabit; // sabitler önce
@@ -920,6 +923,12 @@ function sohbetYonetimAc(s) {
   $("sohbet-yonetim-sabitle").textContent = sabit ? "📌 Sabitlemeyi kaldır" : "📌 Sabitle";
   $("sohbet-yonetim-sessize").textContent = sessiz ? "🔔 Sessizi kaldır" : "🔕 Sessize al";
   $("modal-sohbet-yonetim").dataset.sohbetId = s.id;
+  // "Sohbeti sil" (kendim için gizle) sadece birebir sohbetlerde gösterilir;
+  // gruplar için bu menüde bir silme seçeneği yok (gruptan ayrılma ayrı akış).
+  const silBtn = $("sohbet-yonetim-sil");
+  if (silBtn) {
+    if (s.tip === "grup") sakla(silBtn); else goster(silBtn);
+  }
   goster($("modal-sohbet-yonetim"));
 }
 
@@ -945,6 +954,55 @@ async function sohbetSessizeToggle() {
     });
   } catch (e) { alert("İşlem başarısız: " + e.message); }
   sakla($("modal-sohbet-yonetim"));
+}
+
+// "Sohbeti sil" (SADECE KENDİM İÇİN): mesajları kimseden silmiyoruz — karşı
+// tarafın kopyası ve Firestore'daki asıl veri olduğu gibi kalır. Bunun yerine
+// kendi profil belgemize "bu sohbeti şu ana kadar sildim" damgası vuruyoruz.
+// Sohbet listesi çizilirken bu damgadan ESKİ olan sohbetler gizlenir; damgadan
+// SONRA gelen yeni bir mesaj olursa sohbet otomatik olarak listede geri belirir
+// (WhatsApp'taki "sohbeti sil" davranışına benzer).
+async function sohbetSilBenimIcin() {
+  const id = $("modal-sohbet-yonetim").dataset.sohbetId;
+  if (!id) return;
+  const onay = confirm(
+    "Bu sohbeti kendi listenden silmek istediğine emin misin?\n\n" +
+    "Karşı taraf sohbeti ve mesajları görmeye devam eder. Sen tekrar mesaj " +
+    "gönderirsen ya da karşı taraftan yeni mesaj gelirse sohbet listende yeniden görünür."
+  );
+  if (!onay) return;
+  try {
+    await updateDoc(doc(db, "kullanicilar", suankiKullanici.uid), {
+      [`silinenSohbetler.${id}`]: Date.now()
+    });
+  } catch (e) {
+    alert("İşlem başarısız: " + e.message);
+    sakla($("modal-sohbet-yonetim"));
+    return;
+  }
+  // Şu an bu sohbet açıksa karşılama ekranına dön.
+  if (aktifSohbetId === id) {
+    aktifSohbetId = null;
+    aktifSohbetTipi = null;
+    aktifSohbetKarsi = null;
+    sakla($("sohbet-aktif"));
+    goster($("karsilama-ekrani"));
+    if (window.innerWidth <= 760) {
+      $("panel-liste").classList.remove("gizli-mobil");
+      $("panel-sohbet").classList.add("gizli-mobil");
+    }
+  }
+  sakla($("modal-sohbet-yonetim"));
+}
+
+// Bir sohbetin, bu cihazdaki kullanıcı için "silinmiş" (gizlenmiş) sayılıp
+// sayılmadığını hesaplar: silme damgasından sonra yeni mesaj gelmediyse gizlidir.
+function sohbetGizliMi(s) {
+  const silinenler = tumUyeler[suankiKullanici?.uid]?.silinenSohbetler || {};
+  const silinmeZamani = silinenler[s.id];
+  if (!silinmeZamani) return false;
+  const sonMesajMs = s.sonMesajZamani?.toMillis?.() || 0;
+  return sonMesajMs <= silinmeZamani;
 }
 
 // ---------- Birebir sohbet aç (yoksa oluştur) ----------
@@ -1188,6 +1246,15 @@ function mesajlariDinle(sohbetId) {
       });
       ham = ham.filter((m) => !(m.sonKullanmaMs && m.sonKullanmaMs <= simdi));
     }
+
+    // "Sohbeti sil" ile bu sohbeti kendi listemizden temizlediysek, o silme
+    // anından ÖNCEKİ mesajları kendi ekranımızda göstermiyoruz (karşı tarafta
+    // ve Firestore'da hâlâ duruyorlar — sadece bizim görünümümüzden gizleniyor).
+    const kendiSilmeZamani = (tumUyeler[suankiKullanici?.uid]?.silinenSohbetler || {})[sohbetId];
+    if (kendiSilmeZamani) {
+      ham = ham.filter((m) => (m.zaman?.toMillis?.() || 0) > kendiSilmeZamani);
+    }
+
     mesajlarCache = ham;
 
     // Arama modundayken ya da ilk yüklemede tam çizim yapıyoruz (gün ayraçları
@@ -5622,6 +5689,7 @@ $("liste-sil-btn")?.addEventListener("click", async () => {
 // --- Sohbet yönetim menüsü butonları ---
 $("sohbet-yonetim-sabitle")?.addEventListener("click", sohbetSabitleToggle);
 $("sohbet-yonetim-sessize")?.addEventListener("click", sohbetSessizeToggle);
+$("sohbet-yonetim-sil")?.addEventListener("click", sohbetSilBenimIcin);
 $("sohbet-yonetim-medya")?.addEventListener("click", () => {
   sakla($("modal-sohbet-yonetim"));
   // Mevcut (lightbox'lı) medya galerisini aç
