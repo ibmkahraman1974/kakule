@@ -3911,13 +3911,20 @@ function sohbetSessizDugmesiGuncelle() {
   if (!btn || !aktifSohbetId) return;
   const sessiz = aktifSohbetSessizMi();
   const grupMu = aktifSohbetTipi === "grup";
+  const kaldirMi = grupMu ? "Grup sohbetini sessize almayı kaldır" : "Kişi sohbetini sessize almayı kaldır";
+  const almaMi = grupMu ? "Grup sohbetini sessize al" : "Kişi sohbetini sessize al";
   btn.classList.toggle("sessiz-aktif", sessiz);
-  btn.title = sessiz
-    ? (grupMu ? "Grup sohbetini sessize almayı kaldır" : "Kişi sohbetini sessize almayı kaldır")
-    : (grupMu ? "Grup sohbetini sessize al" : "Kişi sohbetini sessize al");
+  btn.title = sessiz ? kaldirMi : almaMi;
   sakla($("sohbet-sessiz-ikon-acik"));
   sakla($("sohbet-sessiz-ikon-kapali"));
   goster(sessiz ? $("sohbet-sessiz-ikon-kapali") : $("sohbet-sessiz-ikon-acik"));
+
+  // "Diğer" (⋮) menüsündeki karşılığını da güncelle.
+  sakla($("sohbet-menu-sessiz-ikon-acik"));
+  sakla($("sohbet-menu-sessiz-ikon-kapali"));
+  goster(sessiz ? $("sohbet-menu-sessiz-ikon-kapali") : $("sohbet-menu-sessiz-ikon-acik"));
+  const etiket = $("sohbet-menu-sessiz-etiket");
+  if (etiket) etiket.textContent = sessiz ? (grupMu ? "Grup sessizini kaldır" : "Kişi sessizini kaldır") : (grupMu ? "Grubu sessize al" : "Kişiyi sessize al");
 }
 
 $("sohbet-sessiz-btn").addEventListener("click", async () => {
@@ -5762,6 +5769,20 @@ $("sohbet-yonetim-sil")?.addEventListener("click", sohbetSilBenimIcin);
   menu.addEventListener("click", (e) => {
     if (e.target.closest(".ust-menu-oge")) menuyuKapat();
   });
+
+  // Sesli ara / Görüntülü ara / Sessize al artık bu menüde — gerçek
+  // (gizli) butona proxy tıklama yapıyorlar.
+  const sohbetEslesmeler = [
+    ["sohbet-menu-sesli-arama", "sesli-arama-btn"],
+    ["sohbet-menu-goruntulu-arama", "goruntulu-arama-btn"],
+    ["sohbet-menu-sessiz", "sohbet-sessiz-btn"]
+  ];
+  sohbetEslesmeler.forEach(([dropdownId, gercekId]) => {
+    $(dropdownId)?.addEventListener("click", () => {
+      menuyuKapat();
+      $(gercekId)?.click();
+    });
+  });
 })();
 
 // ============================================================
@@ -5803,6 +5824,8 @@ $("sohbet-yonetim-sil")?.addEventListener("click", sohbetSilBenimIcin);
     ["ust-menu-davet", "davet-olustur-btn"],
     ["ust-menu-yeni-grup", "yeni-grup-btn"],
     ["ust-menu-admin", "admin-panel-btn"],
+    ["ust-menu-tema", "tema-degistir-btn"],
+    ["ust-menu-sos", "sos-btn"],
     ["ust-menu-cikis", "cikis-btn"]
   ];
   eslesmeler.forEach(([dropdownId, gercekId]) => {
