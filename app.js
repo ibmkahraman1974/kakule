@@ -3624,17 +3624,39 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-async function pushAbonelikBaslat() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-  if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.startsWith("BURAYA")) return;
-  if (!CF_WORKER_URL || CF_WORKER_URL.startsWith("BURAYA")) return;
+// sessiz=true: uygulama açılışında arka planda çağrılır — SADECE izin daha
+// önceden zaten "granted" ise abone olur. Modern tarayıcılar (Chrome/Edge),
+// bir kullanıcı tıklaması (gesture) OLMADAN yapılan Notification.requestPermission()
+// çağrılarını sessizce yok sayar (izin penceresi hiç açılmaz, izin "default"
+// olarak kalır) — bu yüzden burada asla requestPermission çağırmıyoruz.
+// sessiz=false: Profil > "Bildirim İzni (Push)" düğmesinden çağrılır (gerçek
+// bir tıklama sonucu olduğundan tarayıcı izin penceresini gösterebilir) ve
+// sonucu kullanıcıya kısaca özetler.
+async function pushAbonelikBaslat(sessiz = true) {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (!sessiz) alert("Bu tarayıcı/cihaz push bildirimlerini desteklemiyor.");
+    return;
+  }
+  if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.startsWith("BURAYA") || !CF_WORKER_URL || CF_WORKER_URL.startsWith("BURAYA")) {
+    if (!sessiz) alert("Bildirim ayarları eksik yapılandırılmış (VAPID/Worker adresi).");
+    return;
+  }
 
   try {
-    if (Notification.permission === "default") {
-      const izin = await Notification.requestPermission();
-      if (izin !== "granted") return;
+    if (Notification.permission === "denied") {
+      if (!sessiz) alert("🔔 Bildirim izni kapalı görünüyor. Açmak için tarayıcının/telefonun site ayarlarından bu uygulamaya bildirim izni vermen gerekiyor.");
+      return;
     }
-    if (Notification.permission !== "granted") return;
+    if (Notification.permission === "default") {
+      // Sadece gerçek bir tıklama sonucunda (sessiz=false) izin penceresini tetikle.
+      if (sessiz) return;
+      const izin = await Notification.requestPermission();
+      if (izin !== "granted") {
+        if (!sessiz) alert("🔔 Bildirim izni verilmedi.");
+        return;
+      }
+    }
+    // Buraya geldiysek Notification.permission === "granted"
 
     const reg = await navigator.serviceWorker.ready;
     let subscription = await reg.pushManager.getSubscription();
@@ -3653,10 +3675,14 @@ async function pushAbonelikBaslat() {
         pushSubscriptions: arrayUnion(subJson)
       });
     }
+    if (!sessiz) alert("🔔 Bildirim izni açık ve bu cihaz kayıtlı. Artık mesaj bildirimleri gelecek.");
   } catch (err) {
     console.warn("Push abonelik kurulamadı:", err.message);
+    if (!sessiz) alert("Bildirim aboneliği kurulamadı: " + err.message);
   }
 }
+
+$("bildirim-izni-ac-btn")?.addEventListener("click", () => pushAbonelikBaslat(false));
 
 // ============================================================
 // KONUM İZNİ (önceden iste — konum gönderme ve SOS anında çalışsın)
