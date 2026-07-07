@@ -2470,6 +2470,171 @@ function osmHaritaLinki(lat, lng) {
 }
 
 // ============================================================
+// HARİTADAN KONUM SEÇME (WhatsApp tarzı: Google Maps API/anahtar
+// gerekmeden — ücretsiz OpenStreetMap tile'ları + Nominatim arama/
+// ters-geokodlama ile). Kullanıcı haritayı sürükler, iğne ekranda
+// sabit kalır (ortada); harita her durduğunda (moveend) iğnenin
+// gösterdiği koordinat = seçilen konum. Onaylayınca mevcut "konum"
+// önizleme/gönderme akışına (onizlemeModu/onizlemeKonum) devrediyor.
+// ============================================================
+let konumSecHarita = null;
+let konumSecAramaZamanlayici = null;
+let konumSecSonAdres = null; // ters-geokodlanan en güncel adres metni
+
+function konumSecMerkezKoordinati() {
+  if (!konumSecHarita) return null;
+  const c = konumSecHarita.getCenter();
+  return { lat: c.lat, lng: c.lng };
+}
+
+// Ters geokodlama: haritanın ortasındaki koordinatı okunabilir bir
+// adrese çevirir (Nominatim, ücretsiz — anahtar gerekmez).
+async function konumSecAdresGuncelle(lat, lng) {
+  $("konum-sec-adres").textContent = "Adres bulunuyor…";
+  try {
+    const params = new URLSearchParams({ format: "jsonv2", lat: String(lat), lon: String(lng), zoom: "16" });
+    const yanit = await fetch(`https://nominatim.openstreetmap.org/reverse?${params.toString()}`, {
+      headers: { "Accept-Language": "tr" }
+    });
+    const veri = await yanit.json();
+    konumSecSonAdres = veri?.display_name || null;
+    $("konum-sec-adres").textContent = konumSecSonAdres || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  } catch {
+    konumSecSonAdres = null;
+    $("konum-sec-adres").textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  }
+}
+
+$("ek-menu-konum-sec").addEventListener("click", async () => {
+  $("ek-menu").classList.add("gizli"); $("ek-btn").classList.remove("acik");
+  if (!aktifSohbetId) return;
+
+  $("konum-sec-arama-input").value = "";
+  sakla($("konum-sec-sonuclar"));
+  $("konum-sec-adres").textContent = "Konumu seçmek için haritayı sürükle…";
+  goster($("modal-konum-sec"));
+
+  try {
+    const L = await leafletYukle();
+    const baslangic = sonBilinenKonum
+      ? [sonBilinenKonum.lat, sonBilinenKonum.lng]
+      : [39.0, 35.0]; // Türkiye geneli — GPS/önbellek yoksa nötr başlangıç
+    const baslangicZoom = sonBilinenKonum ? 15 : 6;
+
+    if (!konumSecHarita) {
+      konumSecHarita = L.map("konum-sec-harita", { zoomControl: true, attributionControl: false })
+        .setView(baslangic, baslangicZoom);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        subdomains: "abc"
+      }).addTo(konumSecHarita);
+      konumSecHarita.on("moveend", () => {
+        const c = konumSecMerkezKoordinati();
+        if (c) konumSecAdresGuncelle(c.lat, c.lng);
+      });
+    } else {
+      konumSecHarita.setView(baslangic, baslangicZoom);
+    }
+    setTimeout(() => {
+      konumSecHarita.invalidateSize();
+      const c = konumSecMerkezKoordinati();
+      if (c) konumSecAdresGuncelle(c.lat, c.lng);
+    }, 120);
+  } catch (err) {
+    $("konum-sec-adres").textContent = "Harita yüklenemedi: " + err.message;
+  }
+});
+
+$("konum-sec-kapat-btn").addEventListener("click", () => {
+  sakla($("modal-konum-sec"));
+});
+
+// "Şu anki konumuma git" — haritayı GPS konumuna kaydırır (seçimi değiştirmez, sadece kolaylık).
+$("konum-sec-konumum-btn").addEventListener("click", () => {
+  if (!navigator.geolocation || !konumSecHarita) return;
+  const btn = $("konum-sec-konumum-btn");
+  btn.classList.add("aktif");
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      konumSecHarita.setView([pos.coords.latitude, pos.coords.longitude], 16);
+      btn.classList.remove("aktif");
+    },
+    () => { btn.classList.remove("aktif"); alert("Konumun alınamadı."); },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+});
+
+// Yer/adres arama (Nominatim forward geocoding) — yazarken debounce'lu.
+$("konum-sec-arama-input").addEventListener("input", (e) => {
+  clearTimeout(konumSecAramaZamanlayici);
+  const sorgu = e.target.value.trim();
+  if (sorgu.length < 3) { sakla($("konum-sec-sonuclar")); return; }
+  konumSecAramaZamanlayici = setTimeout(() => konumSecAra(sorgu), 450);
+});
+$("konum-sec-arama-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    clearTimeout(konumSecAramaZamanlayici);
+    konumSecAra(e.target.value.trim());
+  }
+});
+
+async function konumSecAra(sorgu) {
+  if (!sorgu) return;
+  $("konum-sec-sonuclar").innerHTML = `<div class="konum-sec-sonuc-ogesi">Aranıyor…</div>`;
+  goster($("konum-sec-sonuclar"));
+  try {
+    const params = new URLSearchParams({ format: "jsonv2", q: sorgu, limit: "6" });
+    const yanit = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+      headers: { "Accept-Language": "tr" }
+    });
+    const sonuclar = await yanit.json();
+    if (!Array.isArray(sonuclar) || !sonuclar.length) {
+      $("konum-sec-sonuclar").innerHTML = `<div class="konum-sec-sonuc-ogesi">Sonuç bulunamadı.</div>`;
+      return;
+    }
+    $("konum-sec-sonuclar").innerHTML = sonuclar.map((s, i) => `
+      <button class="konum-sec-sonuc-ogesi" data-idx="${i}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>${(s.display_name || "").replace(/</g, "&lt;")}</span>
+      </button>`).join("");
+    $("konum-sec-sonuclar").querySelectorAll(".konum-sec-sonuc-ogesi").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const s = sonuclar[Number(btn.dataset.idx)];
+        if (!s || !konumSecHarita) return;
+        konumSecHarita.setView([Number(s.lat), Number(s.lon)], 17);
+        sakla($("konum-sec-sonuclar"));
+        $("konum-sec-arama-input").value = s.display_name || "";
+      });
+    });
+  } catch {
+    $("konum-sec-sonuclar").innerHTML = `<div class="konum-sec-sonuc-ogesi">Arama başarısız oldu (internet bağlantını kontrol et).</div>`;
+  }
+}
+
+// Seçilen (haritanın ortasındaki) konumu onayla — mevcut konum önizleme/
+// gönderme akışına (modal-onizleme) devret, kod tekrarı olmasın.
+$("konum-sec-gonder-btn").addEventListener("click", () => {
+  const c = konumSecMerkezKoordinati();
+  if (!c || !aktifSohbetId) return;
+  sakla($("modal-konum-sec"));
+
+  onizlemeModu = "konum";
+  onizlemeKonum = { lat: c.lat, lng: c.lng };
+
+  $("onizleme-baslik").textContent = "Konum gönder";
+  $("onizleme-aciklama").value = "";
+  $("onizleme-aciklama").placeholder = "Not ekle (isteğe bağlı)";
+  const haritaUrl = staticHaritaUrl(c.lat, c.lng);
+  $("onizleme-icerik").innerHTML = `
+    <div class="onizleme-konum-kutu" style="flex-direction:column;align-items:stretch;">
+      <img src="${haritaUrl}" style="border-radius:8px;width:100%;" alt="harita önizleme" />
+      <div style="margin-top:8px;font-size:12.5px;color:var(--metin-soluk);">${konumSecSonAdres ? konumSecSonAdres.replace(/</g, "&lt;") : "Seçilen konum gönderilecek."}</div>
+    </div>`;
+  goster($("modal-onizleme"));
+});
+
+
+// ============================================================
 // MEDYA GALERİSİ (sohbette gönderilmiş tüm görseller)
 // ============================================================
 let medyaGaleriListesi = [];
