@@ -330,6 +330,24 @@ input, textarea {
   overflow: hidden;
 }
 
+/* ---------- Marka şeridi (üst çentik/Dynamic Island güvenli alanı) ---------- */
+/* liste-ust ve sohbet-ust satırları iPhone'larda çentiğin altında kalıp
+   tıklanamaz hale gelmesin diye eklendi. env(safe-area-inset-top) sıfırsa
+   (masaüstü/Android) şerit ince kalır; çentikli iPhone'larda otomatik uzar. */
+.marka-serit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
+  background: var(--yuzey);
+}
+.marka-serit-logo {
+  height: 16px;
+  width: auto;
+  opacity: 0.85;
+}
+
 /* Kenar liste paneli */
 .panel-liste {
   width: 100%;
@@ -1418,8 +1436,8 @@ input, textarea {
 
 .gelen-arama-bildirimi {
   position: fixed;
-  top: 16px; left: 50%;
-  transform: translateX(-50%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
   background: var(--yuzey);
   border: 1px solid var(--alev);
   border-radius: 14px;
