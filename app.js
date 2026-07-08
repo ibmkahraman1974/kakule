@@ -1341,14 +1341,13 @@ function mesajElemaniOlustur(m) {
     </a>`;
   } else if (m.tip === "konum") {
     const haritaSrc = staticHaritaUrl(m.lat, m.lng, 240, 130);
-    const haritaLink = osmHaritaLinki(m.lat, m.lng);
-    icerik += `<a class="konum-karti" href="${haritaLink}" target="_blank" rel="noopener">
+    icerik += `<button type="button" class="konum-karti" data-lat="${konumSayi(m.lat)}" data-lng="${konumSayi(m.lng)}">
       <img src="${haritaSrc}" alt="konum" />
       <span class="konum-etiket">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
         Konum — haritada aç
       </span>
-    </a>`;
+    </button>`;
     if (m.metin) icerik += `<div style="margin-top:6px;">${aramaMetniVurgula(m.metin)}</div>`;
   } else {
     icerik += aramaMetniVurgula(m.metin || "");
@@ -1698,9 +1697,14 @@ $("mesaj-alani").addEventListener("click", (e) => {
     window.open(e.target.src, "_blank");
     return;
   }
+  const konumKarti = e.target.closest(".konum-karti");
+  if (konumKarti) {
+    konumGoruntulePanelAc(konumKarti.dataset.lat, konumKarti.dataset.lng);
+    return;
+  }
   if (e.target.closest(".alintilanan-onizleme")) return; // alıntı önizlemesi ayrı işleniyor (mesaja git)
   if (e.target.closest(".tepki-pil")) return; // tepki rozetleri ayrı işleniyor
-  if (e.target.closest("a")) return; // dosya/konum linklerine tıklamayı engelleme
+  if (e.target.closest("a")) return; // dosya linklerine tıklamayı engelleme
   if (e.target.closest("audio")) return; // sesli mesaj oynatıcısına tıklamayı engelleme
 
   const balon = e.target.closest(".balon");
@@ -2186,9 +2190,8 @@ $("ek-menu-dosya").addEventListener("click", () => {
   $("dosya-input-genel").click();
 });
 
-// ---------- Önizleme modalı: tek, mod tabanlı gönderme mantığı ----------
-let onizlemeModu = null;     // 'dosya' | 'konum'
-let onizlemeKonum = null;    // { lat, lng }
+// ---------- Önizleme modalı: tek, mod tabanlı gönderme mantığı (yalnızca dosya/görsel) ----------
+let onizlemeModu = null;     // 'dosya'
 
 $("onizleme-gonder-btn").addEventListener("click", async () => {
   if (!gonderimIzniVarMi()) return;
@@ -2215,24 +2218,9 @@ $("onizleme-gonder-btn").addEventListener("click", async () => {
     } catch (err) {
       alert("Gönderilemedi: " + err.message);
     }
-  } else if (onizlemeModu === "konum") {
-    if (!onizlemeKonum || !aktifSohbetId) { alert("Konum henüz bulunamadı, biraz bekle."); return; }
-    const not = $("onizleme-aciklama").value.trim().slice(0, MESAJ_MAKS_KARAKTER);
-    sakla($("modal-onizleme"));
-    $("onizleme-aciklama").placeholder = "Açıklama ekle (isteğe bağlı)";
-
-    await addDoc(collection(db, "sohbetler", aktifSohbetId, "mesajlar"), {
-      gonderenUid: suankiKullanici.uid,
-      tip: "konum", lat: onizlemeKonum.lat, lng: onizlemeKonum.lng, metin: not,
-      ...yanitlananAlaniHazirla(),
-      zaman: serverTimestamp()
-    });
-    yanitlaIptal();
-    gonderimKaydet();
-    await sohbetSonMesajGuncelle("📍 Konum");
-    onizlemeKonum = null;
   }
 });
+
 
 // ---------- Sesli mesaj kaydı ----------
 let medyaKaydedici = null;
@@ -2389,59 +2377,72 @@ $("dosya-input-genel").addEventListener("change", (e) => {
   goster($("modal-onizleme"));
 });
 
-// ---------- Konum gönderme ----------
+// ---------- Konum gönderme paneli (sohbet alanı içinde açılır, tam ekran değil) ----------
+// "Şu anki konumum" ve "Haritadan konum seç" artık aynı paneli kullanıyor:
+// harita sohbet ekranının içinde açılır, üzerinde "Konumu gönder" butonu vardır,
+// gönder'e basılınca konum gönderilir ve panel kapanır.
+async function konumPaneliAc(tazeGPSIste) {
+  if (!aktifSohbetId) return;
+
+  $("konum-sec-arama-input").value = "";
+  sakla($("konum-sec-sonuclar"));
+  $("konum-panel-not").value = "";
+  $("konum-sec-adres").textContent = "Konumu seçmek için haritayı sürükle…";
+  goster($("konum-panel"));
+
+  try {
+    const L = await leafletYukle();
+    const baslangic = sonBilinenKonum
+      ? [sonBilinenKonum.lat, sonBilinenKonum.lng]
+      : [39.0, 35.0]; // Türkiye geneli — GPS/önbellek yoksa nötr başlangıç
+    const baslangicZoom = sonBilinenKonum ? 15 : 6;
+
+    if (!konumSecHarita) {
+      konumSecHarita = L.map("konum-sec-harita", { zoomControl: true, attributionControl: false })
+        .setView(baslangic, baslangicZoom);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        subdomains: "abc"
+      }).addTo(konumSecHarita);
+      konumSecHarita.on("moveend", () => {
+        const c = konumSecMerkezKoordinati();
+        if (c) konumSecAdresGuncelle(c.lat, c.lng);
+      });
+    } else {
+      konumSecHarita.setView(baslangic, baslangicZoom);
+    }
+    setTimeout(() => {
+      konumSecHarita.invalidateSize();
+      const c = konumSecMerkezKoordinati();
+      if (c) konumSecAdresGuncelle(c.lat, c.lng);
+    }, 120);
+
+    // "Şu anki konumum"dan açıldıysa, taze bir GPS ölçümü isteyip haritayı oraya kaydır.
+    if (tazeGPSIste && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (!konumSecHarita) return;
+          konumSecHarita.setView([pos.coords.latitude, pos.coords.longitude], 16);
+        },
+        () => { /* sessizce yoksay — önbellek/Türkiye geneli başlangıçla devam */ },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  } catch (err) {
+    $("konum-sec-adres").textContent = "Harita yüklenemedi: " + err.message;
+  }
+}
+
 $("ek-menu-konum").addEventListener("click", () => {
   $("ek-menu").classList.add("gizli"); $("ek-btn").classList.remove("acik");
-  if (!aktifSohbetId) return;
   if (!navigator.geolocation) { alert("Tarayıcınız konum özelliğini desteklemiyor."); return; }
-
-  onizlemeModu = "konum";
-  onizlemeKonum = null;
-
-  $("onizleme-baslik").textContent = "Konum gönder";
-  $("onizleme-aciklama").value = "";
-  $("onizleme-aciklama").placeholder = "Not ekle (isteğe bağlı)";
-  goster($("modal-onizleme"));
-
-  // İzin daha önceden verilmiş ve arka plan konum takibi açıksa, en son bilinen
-  // konumu anında önizlemede göster (izin penceresi/GPS ölçümü beklenmez);
-  // ardından daha taze bir ölçüm geldiğinde önizleme otomatik güncellenir.
-  if (sonBilinenKonum) {
-    onizlemeKonum = { lat: sonBilinenKonum.lat, lng: sonBilinenKonum.lng };
-    const haritaUrl = staticHaritaUrl(onizlemeKonum.lat, onizlemeKonum.lng);
-    $("onizleme-icerik").innerHTML = `
-      <div class="onizleme-konum-kutu" style="flex-direction:column;align-items:stretch;">
-        <img src="${haritaUrl}" style="border-radius:8px;width:100%;" alt="harita önizleme" />
-        <div style="margin-top:8px;font-size:12.5px;color:var(--metin-soluk);">Şu anki konumun gönderilecek.</div>
-      </div>`;
-  } else {
-    $("onizleme-icerik").innerHTML = `
-      <div class="onizleme-konum-kutu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <div>Konumun bulunuyor...</div>
-      </div>`;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      onizlemeKonum = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      const haritaUrl = staticHaritaUrl(onizlemeKonum.lat, onizlemeKonum.lng);
-      $("onizleme-icerik").innerHTML = `
-        <div class="onizleme-konum-kutu" style="flex-direction:column;align-items:stretch;">
-          <img src="${haritaUrl}" style="border-radius:8px;width:100%;" alt="harita önizleme" />
-          <div style="margin-top:8px;font-size:12.5px;color:var(--metin-soluk);">Şu anki konumun gönderilecek.</div>
-        </div>`;
-    },
-    () => {
-      if (!onizlemeKonum) {
-        $("onizleme-icerik").innerHTML = `<div class="onizleme-konum-kutu">Konum alınamadı. Tarayıcı/telefon konum izni vermiş mi kontrol et.</div>`;
-      }
-      // onizlemeKonum zaten önbellekten doluysa (sonBilinenKonum), taze ölçüm
-      // başarısız olsa da önizlemede gösterilen konum geçerliliğini korur.
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
+  konumPaneliAc(true);
 });
+
+$("konum-panel-kapat-btn").addEventListener("click", () => {
+  sakla($("konum-panel"));
+});
+
 
 // Konum koordinatlarını (Firestore'dan/kullanıcı cihazından gelen ham değeri)
 // güvenli bir sayıya çevirir; geçersiz/bozuk bir değer gelirse 0 döner.
@@ -2463,19 +2464,13 @@ function staticHaritaUrl(lat, lng, genislik = 320, yukseklik = 160) {
   return `https://staticmap.openstreetmap.de/staticmap.php?${params.toString()}`;
 }
 
-function osmHaritaLinki(lat, lng) {
-  const la = konumSayi(lat), ln = konumSayi(lng);
-  const params = new URLSearchParams({ mlat: String(la), mlon: String(ln) });
-  return `https://www.openstreetmap.org/?${params.toString()}#map=16/${la}/${ln}`;
-}
-
 // ============================================================
 // HARİTADAN KONUM SEÇME (WhatsApp tarzı: Google Maps API/anahtar
 // gerekmeden — ücretsiz OpenStreetMap tile'ları + Nominatim arama/
 // ters-geokodlama ile). Kullanıcı haritayı sürükler, iğne ekranda
 // sabit kalır (ortada); harita her durduğunda (moveend) iğnenin
-// gösterdiği koordinat = seçilen konum. Onaylayınca mevcut "konum"
-// önizleme/gönderme akışına (onizlemeModu/onizlemeKonum) devrediyor.
+// gösterdiği koordinat = seçilen konum. "Konumu gönder" butonuna
+// basınca doğrudan gönderilir (bkz. konumPaneliAc, konum-sec-gonder-btn).
 // ============================================================
 let konumSecHarita = null;
 let konumSecAramaZamanlayici = null;
@@ -2505,48 +2500,9 @@ async function konumSecAdresGuncelle(lat, lng) {
   }
 }
 
-$("ek-menu-konum-sec").addEventListener("click", async () => {
+$("ek-menu-konum-sec").addEventListener("click", () => {
   $("ek-menu").classList.add("gizli"); $("ek-btn").classList.remove("acik");
-  if (!aktifSohbetId) return;
-
-  $("konum-sec-arama-input").value = "";
-  sakla($("konum-sec-sonuclar"));
-  $("konum-sec-adres").textContent = "Konumu seçmek için haritayı sürükle…";
-  goster($("modal-konum-sec"));
-
-  try {
-    const L = await leafletYukle();
-    const baslangic = sonBilinenKonum
-      ? [sonBilinenKonum.lat, sonBilinenKonum.lng]
-      : [39.0, 35.0]; // Türkiye geneli — GPS/önbellek yoksa nötr başlangıç
-    const baslangicZoom = sonBilinenKonum ? 15 : 6;
-
-    if (!konumSecHarita) {
-      konumSecHarita = L.map("konum-sec-harita", { zoomControl: true, attributionControl: false })
-        .setView(baslangic, baslangicZoom);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        subdomains: "abc"
-      }).addTo(konumSecHarita);
-      konumSecHarita.on("moveend", () => {
-        const c = konumSecMerkezKoordinati();
-        if (c) konumSecAdresGuncelle(c.lat, c.lng);
-      });
-    } else {
-      konumSecHarita.setView(baslangic, baslangicZoom);
-    }
-    setTimeout(() => {
-      konumSecHarita.invalidateSize();
-      const c = konumSecMerkezKoordinati();
-      if (c) konumSecAdresGuncelle(c.lat, c.lng);
-    }, 120);
-  } catch (err) {
-    $("konum-sec-adres").textContent = "Harita yüklenemedi: " + err.message;
-  }
-});
-
-$("konum-sec-kapat-btn").addEventListener("click", () => {
-  sakla($("modal-konum-sec"));
+  konumPaneliAc(false);
 });
 
 // "Şu anki konumuma git" — haritayı GPS konumuna kaydırır (seçimi değiştirmez, sadece kolaylık).
@@ -2611,27 +2567,81 @@ async function konumSecAra(sorgu) {
   }
 }
 
-// Seçilen (haritanın ortasındaki) konumu onayla — mevcut konum önizleme/
-// gönderme akışına (modal-onizleme) devret, kod tekrarı olmasın.
-$("konum-sec-gonder-btn").addEventListener("click", () => {
+// Seçilen (haritanın ortasındaki) konumu doğrudan gönder — harita panelinin
+// kendi üzerindeki "Konumu gönder" butonu; basınca konum gönderilir ve
+// harita (panel) kapanır. Ayrı bir onay adımı/modalı yok.
+$("konum-sec-gonder-btn").addEventListener("click", async () => {
   const c = konumSecMerkezKoordinati();
   if (!c || !aktifSohbetId) return;
-  sakla($("modal-konum-sec"));
+  if (!gonderimIzniVarMi()) return;
 
-  onizlemeModu = "konum";
-  onizlemeKonum = { lat: c.lat, lng: c.lng };
+  const not = $("konum-panel-not").value.trim().slice(0, MESAJ_MAKS_KARAKTER);
+  sakla($("konum-panel")); // harita kapanır
 
-  $("onizleme-baslik").textContent = "Konum gönder";
-  $("onizleme-aciklama").value = "";
-  $("onizleme-aciklama").placeholder = "Not ekle (isteğe bağlı)";
-  const haritaUrl = staticHaritaUrl(c.lat, c.lng);
-  $("onizleme-icerik").innerHTML = `
-    <div class="onizleme-konum-kutu" style="flex-direction:column;align-items:stretch;">
-      <img src="${haritaUrl}" style="border-radius:8px;width:100%;" alt="harita önizleme" />
-      <div style="margin-top:8px;font-size:12.5px;color:var(--metin-soluk);">${konumSecSonAdres ? konumSecSonAdres.replace(/</g, "&lt;") : "Seçilen konum gönderilecek."}</div>
-    </div>`;
-  goster($("modal-onizleme"));
+  try {
+    const yanitAlani = yanitlananAlaniHazirla();
+    yanitlaIptal();
+    await addDoc(collection(db, "sohbetler", aktifSohbetId, "mesajlar"), {
+      gonderenUid: suankiKullanici.uid,
+      tip: "konum", lat: c.lat, lng: c.lng, metin: not,
+      ...yanitAlani,
+      zaman: serverTimestamp()
+    });
+    gonderimKaydet();
+    await sohbetSonMesajGuncelle("📍 Konum");
+  } catch (err) {
+    alert("Konum gönderilemedi: " + err.message);
+  }
 });
+
+// ============================================================
+// KONUM GÖRÜNTÜLEME PANELİ — gönderilmiş bir konum mesajına dokununca
+// sohbet ekranının içinde açılır (yeni sekmede dış siteye gitmez).
+// Üstte "Kapat" butonu, altta "Yol tarifi al" butonu (Google Maps'e yönlendirir).
+// ============================================================
+let konumGoruntuleHarita = null;
+let konumGoruntuleMarker = null;
+let konumGoruntuleAktifKoordinat = null; // { lat, lng } — yol tarifi butonu için
+
+async function konumGoruntulePanelAc(lat, lng) {
+  const la = konumSayi(lat), ln = konumSayi(lng);
+  konumGoruntuleAktifKoordinat = { lat: la, lng: ln };
+  goster($("konum-goruntule-panel"));
+
+  try {
+    const L = await leafletYukle();
+    if (!konumGoruntuleHarita) {
+      konumGoruntuleHarita = L.map("konum-goruntule-harita", { zoomControl: true, attributionControl: false })
+        .setView([la, ln], 16);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        subdomains: "abc"
+      }).addTo(konumGoruntuleHarita);
+      konumGoruntuleMarker = L.marker([la, ln]).addTo(konumGoruntuleHarita);
+    } else {
+      konumGoruntuleHarita.setView([la, ln], 16);
+      if (konumGoruntuleMarker) konumGoruntuleMarker.setLatLng([la, ln]);
+    }
+    setTimeout(() => konumGoruntuleHarita.invalidateSize(), 120);
+  } catch (err) {
+    // Harita yüklenemese bile panel açık kalır; yol tarifi butonu yine çalışır.
+  }
+}
+
+$("konum-goruntule-kapat-btn").addEventListener("click", () => {
+  sakla($("konum-goruntule-panel"));
+});
+
+$("konum-goruntule-yol-tarifi-btn").addEventListener("click", () => {
+  if (!konumGoruntuleAktifKoordinat) return;
+  const { lat, lng } = konumGoruntuleAktifKoordinat;
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${lat},${lng}`
+  });
+  window.open(`https://www.google.com/maps/dir/?${params.toString()}`, "_blank", "noopener");
+});
+
 
 
 // ============================================================
