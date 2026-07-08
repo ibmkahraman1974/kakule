@@ -234,7 +234,7 @@
       <p>Soldaki listeden bir aile üyesi veya grup seçerek sohbete başla.</p>
     </div>
 
-    <div id="sohbet-aktif" class="gizli" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div id="sohbet-aktif" class="gizli" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative;">
       <div class="sohbet-ust">
         <button class="icon-btn geri-btn" id="geri-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -392,6 +392,49 @@
           <button class="gonder-btn" id="ses-kayit-gonder" title="Gönder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
           </button>
+        </div>
+      </div>
+
+      <!-- Konum gönderme paneli — tam ekran değil, sohbet alanının içinde açılır -->
+      <div id="konum-panel" class="konum-panel gizli">
+        <div class="konum-panel-ust">
+          <button id="konum-panel-kapat-btn" class="icon-btn" title="Vazgeç">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="konum-sec-arama-input" placeholder="Bir yer, adres ara…" autocomplete="off" />
+        </div>
+        <div id="konum-sec-sonuclar" class="konum-sec-sonuclar gizli"></div>
+        <div class="konum-sec-harita-sarma">
+          <div id="konum-sec-harita" class="konum-sec-harita"></div>
+          <div class="konum-sec-pin">
+            <svg viewBox="0 0 24 24" width="34" height="34"><path fill="#E8A33D" stroke="#8a5a12" stroke-width="1" d="M12 2C8 2 5 5 5 9c0 6 7 13 7 13s7-7 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>
+          </div>
+          <button id="konum-sec-konumum-btn" class="konum-sec-konumum-btn" title="Şu anki konumuma git">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          </button>
+        </div>
+        <div class="konum-panel-alt">
+          <div id="konum-sec-adres" class="konum-sec-adres">Konumu seçmek için haritayı sürükle…</div>
+          <input type="text" id="konum-panel-not" class="konum-panel-not" placeholder="Not ekle (isteğe bağlı)" maxlength="300" autocomplete="off" />
+          <button class="btn-ana" id="konum-sec-gonder-btn" style="width:100%;margin-top:10px;">📍 Konumu gönder</button>
+        </div>
+      </div>
+
+      <!-- Konum görüntüleme paneli — gönderilmiş bir konuma dokununca sohbet alanının içinde açılır -->
+      <div id="konum-goruntule-panel" class="konum-panel gizli">
+        <div class="konum-panel-ust">
+          <div class="konum-panel-baslik">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Konum
+          </div>
+          <button id="konum-goruntule-kapat-btn" class="btn-ikincil konum-panel-kapat-metin-btn" title="Kapat">Kapat</button>
+        </div>
+        <div class="konum-sec-harita-sarma">
+          <div id="konum-goruntule-harita" class="konum-sec-harita"></div>
+        </div>
+        <div class="konum-panel-alt">
+          <button class="btn-ana" id="konum-goruntule-yol-tarifi-btn" style="width:100%;">🧭 Yol tarifi al</button>
         </div>
       </div>
     </div>
@@ -924,33 +967,6 @@
   <div class="statu-kendi-bilgi-cubugu gizli" id="statu-kendi-bilgi-cubugu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
     <span id="statu-gorenler-sayisi">0 kişi gördü</span>
-  </div>
-</div>
-
-<!-- Haritadan konum seçme (WhatsApp tarzı: harita sürüklenir, iğne ortada sabit kalır) -->
-<div id="modal-konum-sec" class="modal-perde gizli">
-  <div class="modal-kutu konum-sec-kutu">
-    <div class="konum-sec-arama-cubuk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" id="konum-sec-arama-input" placeholder="Bir yer, adres ara…" autocomplete="off" />
-      <button id="konum-sec-kapat-btn" class="icon-btn" title="Kapat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div id="konum-sec-sonuclar" class="konum-sec-sonuclar gizli"></div>
-    <div class="konum-sec-harita-sarma">
-      <div id="konum-sec-harita" class="konum-sec-harita"></div>
-      <div class="konum-sec-pin">
-        <svg viewBox="0 0 24 24" width="34" height="34"><path fill="#E8A33D" stroke="#8a5a12" stroke-width="1" d="M12 2C8 2 5 5 5 9c0 6 7 13 7 13s7-7 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>
-      </div>
-      <button id="konum-sec-konumum-btn" class="konum-sec-konumum-btn" title="Şu anki konumuma git">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-      </button>
-    </div>
-    <div class="konum-sec-alt">
-      <div id="konum-sec-adres" class="konum-sec-adres">Konumu seçmek için haritayı sürükle…</div>
-      <button class="btn-ana" id="konum-sec-gonder-btn" style="width:100%;margin-top:10px;">📍 Bu konumu gönder</button>
-    </div>
   </div>
 </div>
 
