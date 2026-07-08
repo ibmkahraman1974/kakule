@@ -437,6 +437,38 @@
           <button class="btn-ana" id="konum-goruntule-yol-tarifi-btn" style="width:100%;">🧭 Yol tarifi al</button>
         </div>
       </div>
+
+      <!-- Canlı buluşma haritası — sohbet alanının içinde açılır, tam ekran değil -->
+      <div id="bulusma-katmani" class="bulusma-katmani gizli">
+        <!-- Üst şerit: kapat butonu + mesafe kartuşu -->
+        <div class="bulusma-ust">
+          <button id="bulusma-kapat-btn" class="icon-btn" title="Buluşmayı bitir">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <div class="bulusma-mesafe-kartus">
+            <span class="bulusma-mesafe-etiket">Aradaki mesafe</span>
+            <span class="bulusma-mesafe-deger" id="bulusma-mesafe">—</span>
+          </div>
+          <div style="width:40px;"></div>
+        </div>
+
+        <!-- Harita -->
+        <div id="bulusma-harita" class="bulusma-harita"></div>
+
+        <!-- Alt durum şeridi -->
+        <div class="bulusma-alt">
+          <div class="bulusma-katilimci-seridi" id="bulusma-katilimci-seridi"></div>
+          <div class="bulusma-durum-metin" id="bulusma-durum-metin">Konum alınıyor…</div>
+        </div>
+
+        <!-- "Buluşma Sağlandı" mührü (yaklaşınca belirir) -->
+        <div id="bulusma-saglandi-perde" class="bulusma-saglandi-perde gizli">
+          <div class="bulusma-saglandi-muhur">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+            <div class="bulusma-saglandi-yazi">Buluşma Sağlandı</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1146,38 +1178,6 @@
   <button class="red" id="bulusma-red-btn" title="Reddet">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
   </button>
-</div>
-
-<!-- Cinematic canlı buluşma haritası (tam ekran) -->
-<div id="bulusma-katmani" class="bulusma-katmani gizli">
-  <!-- Üst şerit: mesafe kartuşu -->
-  <div class="bulusma-ust">
-    <button id="bulusma-kapat-btn" class="icon-btn" title="Buluşmayı bitir">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </button>
-    <div class="bulusma-mesafe-kartus">
-      <span class="bulusma-mesafe-etiket">Aradaki mesafe</span>
-      <span class="bulusma-mesafe-deger" id="bulusma-mesafe">—</span>
-    </div>
-    <div style="width:40px;"></div>
-  </div>
-
-  <!-- Harita -->
-  <div id="bulusma-harita" class="bulusma-harita"></div>
-
-  <!-- Alt durum şeridi -->
-  <div class="bulusma-alt">
-    <div class="bulusma-katilimci-seridi" id="bulusma-katilimci-seridi"></div>
-    <div class="bulusma-durum-metin" id="bulusma-durum-metin">Konum alınıyor…</div>
-  </div>
-
-  <!-- "Buluşma Sağlandı" mührü (yaklaşınca belirir) -->
-  <div id="bulusma-saglandi-perde" class="bulusma-saglandi-perde gizli">
-    <div class="bulusma-saglandi-muhur">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
-      <div class="bulusma-saglandi-yazi">Buluşma Sağlandı</div>
-    </div>
-  </div>
 </div>
 
 <!-- ===================== DEFTER — Paylaşılan Yapılacaklar ===================== -->
