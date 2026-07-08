@@ -14,7 +14,7 @@
 // ve yeni Service Worker'ın devreye girmesini garanti eder.
 // ============================================================
 
-const CACHE_SURUM = "kakule-v3";
+const CACHE_SURUM = "kakule-v4";
 const CORE_ASSETS = [
   "./index.html",
   "./style.css",
