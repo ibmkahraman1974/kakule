@@ -1,0 +1,2613 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>bisanat — Bülent & Şenay İşcan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Cormorant+Garamond:wght@400;500;600&family=Cormorant:ital,wght@0,600;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --bg-0:#f7f2e7; --bg-1:#f1e9d7; --bg-2:#ebe0c8;
+    --card:#fffdf8;
+    --gold-1:#c9962e; --gold-2:#a9782a; --gold-3:#8a6a2c;
+    --cream:#2a2018; --text-soft:#5a4d38; --text-muted:#8f8168;
+    --ribbon-frame:linear-gradient(135deg,#fff6df 0%,#f0d68a 20%,#b8862f 50%,#7c5a1f 75%,#e9c877 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+  html{scroll-behavior:smooth}
+  body{
+    background:radial-gradient(1200px 500px at 15% -10%, #f1e2b8 0%, transparent 60%),
+      linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%);
+    color:var(--cream); font-family:'Montserrat',sans-serif; font-weight:300; overflow-x:hidden;
+  }
+  .ribbon-base{stroke:url(#ribbonDark);stroke-width:9;fill:none;stroke-linecap:round}
+  .ribbon-top{stroke:url(#ribbonLight);stroke-width:4.5;fill:none;stroke-linecap:round}
+  .ribbon-shadow{stroke:#4a3410;stroke-width:11;fill:none;stroke-linecap:round;opacity:.25;filter:blur(2px)}
+
+  header{display:flex;justify-content:space-between;align-items:center;padding:22px 60px;position:sticky;top:0;z-index:20;background:rgba(247,242,231,.9);backdrop-filter:blur(6px);border-bottom:1px solid rgba(138,106,44,.18)}
+  .logo{font-family:'Cormorant',serif;font-style:italic;font-size:24px;color:var(--gold-1);letter-spacing:1px}
+  .logo span{display:block;font-family:'Montserrat';font-style:normal;font-size:10px;letter-spacing:3px;color:var(--text-muted);margin-top:2px}
+  nav a{color:var(--text-soft);text-decoration:none;font-size:11.5px;letter-spacing:1.4px;margin-left:22px;text-transform:uppercase}
+  nav a:hover{color:var(--gold-1)}
+
+  .eyebrow{font-family:'Montserrat';font-size:12px;letter-spacing:5px;color:var(--gold-2);text-transform:uppercase;margin-bottom:18px}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:60px;color:var(--cream);line-height:1.1}
+  .gold-text{background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+  h1 em{font-style:italic;background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+  .sub{max-width:560px;margin:22px auto 0;color:var(--text-soft);font-size:16px;line-height:1.8}
+
+  .hero{position:relative;padding:120px 60px 90px;text-align:center;overflow:hidden;
+    min-height:560px;}
+  .hero-bg{position:absolute;inset:0;z-index:0}
+  .hero-bg-layer{position:absolute;inset:0;background-position:center 30%;background-size:cover;background-repeat:no-repeat;
+    opacity:0;transition:opacity 3.5s ease-in-out}
+  .hero-bg-layer.active{opacity:1}
+  .hero-overlay{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(180deg, rgba(22,16,9,.55) 0%, rgba(22,16,9,.72) 55%, rgba(247,242,231,1) 100%);}
+  .hero svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.85}
+  .hero-inner{position:relative;z-index:2}
+  .hero .eyebrow{color:var(--gold-1)}
+  .hero h1{color:#fff8ea}
+  .hero .sub{color:#e8dcc3}
+  .brand-hl{font-family:'Cormorant',serif;font-style:italic;font-weight:600;font-size:1.15em;
+    background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 4px rgba(0,0,0,.3))}
+  .stats-strip{border-top-color:rgba(255,255,255,.25)}
+  .stat{border-left-color:rgba(255,255,255,.18)}
+  .stat span{color:#cdbfa2}
+
+  .seal-wrap{position:relative;z-index:5;margin-top:-95px;display:flex;justify-content:center}
+  .seal-line{position:absolute;top:50%;left:0;right:0;height:5px;transform:translateY(-50%);z-index:1;
+    background:linear-gradient(90deg, transparent 0%, #7c5a1f 12%, #f0d68a 35%, #fff6df 50%, #f0d68a 65%, #7c5a1f 88%, transparent 100%);
+    box-shadow:0 0 12px rgba(212,175,55,.55), 0 2px 6px rgba(0,0,0,.25)}
+  .seal{position:relative;z-index:2;width:190px;height:190px;display:flex;align-items:center;justify-content:center}
+  .seal img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 16px 28px rgba(0,0,0,.45))}
+
+  .about-united{max-width:1000px;margin:0 auto;text-align:center}
+  .about-names{font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-2);margin-bottom:22px}
+  .about-person-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--cream);text-align:left;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(138,106,44,.25);display:flex;align-items:center;gap:12px}
+  .about-person-name::before{content:"";width:26px;height:2px;background:linear-gradient(90deg,var(--gold-1),var(--gold-3));box-shadow:0 0 6px rgba(212,175,55,.6)}
+  .person-photo{width:190px;aspect-ratio:2/3;border-radius:8px;overflow:hidden;margin-bottom:22px;
+    border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 20px 38px -18px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 5px rgba(60,40,10,.3);
+    background:linear-gradient(160deg,#ece2c8,#d9caa4);display:flex;align-items:center;justify-content:center}
+  .person-photo img{width:100%;height:100%;object-fit:cover;display:block}
+  .person-photo span{font-size:11px;letter-spacing:1px;color:var(--text-muted);text-align:center;padding:0 14px}
+  .about-united p{color:var(--text-soft);font-size:17px;line-height:2;text-align:justify;text-justify:inter-word;hyphens:auto}
+  .about-united p+p{margin-top:22px}
+
+  /* Biyografi: varsayılan 3 satır, 'Devamını oku' ile açılır */
+  .bio-collapse{position:relative;overflow:hidden;transition:max-height .45s ease}
+  .bio-collapse.collapsed{max-height:calc(1em * 2 * 3); /* line-height:2 × 3 satır */}
+  .bio-collapse.collapsed::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.4em;
+    background:linear-gradient(to bottom, rgba(241,233,215,0), var(--bg-1));pointer-events:none}
+  .bio-more-wrap{text-align:center;margin-top:14px}
+  .bio-more{display:inline-flex;align-items:center;gap:8px;background:none;cursor:pointer;
+    font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--gold-2);border:1px solid rgba(138,106,44,.4);border-radius:999px;padding:9px 22px;
+    transition:background .25s ease,border-color .25s ease}
+  .bio-more:hover{background:rgba(201,150,46,.10);border-color:var(--gold-3)}
+  .bio-more .chev{width:13px;height:13px;transition:transform .3s ease}
+  .bio-more.open .chev{transform:rotate(180deg)}
+  .village-quote{margin:30px 0 8px;padding:22px 26px;border-left:3px solid var(--gold-1);background:var(--card);border-radius:0 6px 6px 0;
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--gold-2);text-align:left;line-height:1.7;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.35)}
+  .village-quote span{display:block;font-family:'Montserrat';font-style:normal;font-size:11px;letter-spacing:1px;color:var(--text-muted);margin-top:8px}
+  .about-pull{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;color:var(--gold-2);text-align:center;margin-top:32px;line-height:1.5}
+  .about-roles{display:flex;justify-content:center;gap:40px;margin-top:30px;flex-wrap:wrap}
+  .about-roles div{text-align:center}
+  .about-roles b{display:block;font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--cream)}
+  .about-roles span{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
+
+  .stats-strip{position:relative;z-index:2;display:flex;justify-content:center;gap:0;flex-wrap:wrap;max-width:800px;margin:48px auto 0;border-top:1px solid rgba(138,106,44,.25);padding-top:32px}
+  .stat{flex:1;min-width:140px;text-align:center;padding:0 20px;border-left:1px solid rgba(138,106,44,.2)}
+  .stat:first-child{border-left:none}
+  .stat b{display:block;font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:600;letter-spacing:.5px;
+    background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+  .stat span{font-size:11.5px;letter-spacing:1.8px;color:#e2d4b5;text-transform:uppercase;font-weight:500}
+
+  section{padding:70px 60px}
+  .section-head{text-align:center;margin-bottom:44px}
+  .section-head .eyebrow{margin-bottom:10px}
+  .section-head h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:36px;color:var(--cream)}
+  .section-alt{background:linear-gradient(180deg, rgba(201,150,46,.06), transparent)}
+  .lede{max-width:680px;margin:-24px auto 44px;text-align:center;color:var(--text-soft);font-size:15px;line-height:1.8}
+
+  .hyper-card{max-width:900px;margin:0 auto 56px;padding:48px 56px;border-radius:6px;
+    background:linear-gradient(160deg, rgba(255,255,255,.035), rgba(255,255,255,0) 40%), var(--card);
+    border:1px solid var(--gold-3);
+    box-shadow:0 0 0 1px rgba(212,175,55,.15), 0 30px 60px -20px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
+    position:relative;}
+  .hyper-card::before{content:"";position:absolute;inset:-1px;border-radius:6px;padding:1px;
+    background:linear-gradient(120deg, var(--gold-1), transparent 30%, transparent 70%, var(--gold-2));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;opacity:.5;pointer-events:none;}
+  .hyper-card h3{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--gold-2);margin-bottom:16px}
+  .hyper-card p{color:var(--text-soft);line-height:1.95;font-size:17px;text-align:justify;text-justify:inter-word;hyphens:auto}
+  .hyper-card p+p{margin-top:16px}
+
+  /* Hakkında */
+  .about-wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr;gap:32px}
+  .about-card{position:relative;border-radius:10px;overflow:hidden;background:var(--card);
+    border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 22px 40px -18px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 5px rgba(60,40,10,.3);}
+  .about-card img{width:100%;height:320px;object-fit:cover;display:block}
+  .about-card.secondary img{height:240px}
+  .about-body{padding:28px 32px 34px}
+  .about-role{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-2);margin-bottom:8px}
+  .about-card h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:28px;margin-bottom:12px}
+  .about-card.secondary h3{font-size:23px}
+  .about-card p{color:var(--text-soft);font-size:14.5px;line-height:1.85;text-align:justify;text-justify:inter-word}
+  .about-card p+p{margin-top:10px}
+
+  /* Karşılaştırma (hiperrealizm) */
+  .compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1180px;margin:0 auto}
+  .compare{position:relative;border-radius:8px;overflow:hidden;background:var(--card);
+    border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 18px 34px -16px rgba(0,0,0,.5), inset 0 2px 0 rgba(255,255,255,.7), inset 0 -3px 4px rgba(60,40,10,.3);
+    display:flex;flex-direction:column;height:100%}
+  .compare .cover{width:100%;aspect-ratio:3/2;overflow:hidden;position:relative;
+    background:linear-gradient(160deg,#ece2c8,#d9caa4);display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 5px 12px -3px rgba(0,0,0,.65), inset 0 -5px 12px -3px rgba(0,0,0,.5),
+      inset 5px 0 12px -3px rgba(0,0,0,.4), inset -5px 0 12px -3px rgba(0,0,0,.4),
+      inset 0 1px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(0,0,0,.4)}
+  .compare .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+    filter:contrast(1.03) saturate(1.02)}
+  .compare .cover::after{content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 5px 12px -3px rgba(0,0,0,.65), inset 0 -5px 12px -3px rgba(0,0,0,.5),
+      inset 5px 0 12px -3px rgba(0,0,0,.4), inset -5px 0 12px -3px rgba(0,0,0,.4),
+      inset 0 1px 0 rgba(255,255,255,.6);z-index:1}
+  .compare .cover .cover-fallback{font-size:11px;letter-spacing:1px;color:var(--text-muted);text-align:center;padding:0 14px;text-transform:uppercase;line-height:1.6}
+  .compare .meta{padding:18px 20px 22px;display:flex;flex-direction:column;flex:1}
+  .compare .eyebrow-sm{font-family:'Montserrat';font-size:10.5px;letter-spacing:2px;color:var(--gold-2);text-transform:uppercase;font-weight:600}
+  .compare h4{font-family:inherit;font-size:16px;font-weight:600;color:var(--cream);margin:8px 0 6px}
+  .compare .desc{color:var(--text-muted);font-size:13px;line-height:1.65;text-align:left;flex:1}
+  .compare .detay-btn{margin:16px auto 0;display:block;padding:9px 24px;border-radius:999px;
+    border:1px solid var(--gold-1);background:transparent;color:var(--gold-2);
+    font-family:'Montserrat';font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.25s;flex-shrink:0}
+  .compare .detay-btn:hover{background:linear-gradient(135deg,var(--gold-1),var(--gold-3));color:#fff8ea;border-color:transparent}
+
+  /* Eserler galeri */
+  .cat-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:1000px;margin:0 auto 44px}
+  .chip{font-size:12px;letter-spacing:1px;padding:9px 18px;border-radius:999px;color:var(--text-soft);
+    border:1px solid rgba(138,106,44,.35);background:var(--card);cursor:pointer}
+  .chip.active{color:var(--card);background:linear-gradient(135deg,var(--gold-1),var(--gold-3));border-color:transparent;box-shadow:0 4px 12px -4px rgba(138,106,44,.6)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(262px,300px));justify-content:center;gap:28px;max-width:1180px;margin:0 auto}
+  .piece{position:relative;border-radius:8px;overflow:hidden;background:var(--card);
+    border:6px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 22px 40px -18px rgba(0,0,0,.55),0 0 0 1px rgba(124,90,31,.4),
+      inset 0 2px 0 rgba(255,255,255,.75),inset 0 -3px 5px rgba(60,40,10,.35);
+    transition:transform .35s ease, box-shadow .35s ease;}
+  .piece:hover{transform:translateY(-6px);box-shadow:0 30px 55px -18px rgba(0,0,0,.65), 0 0 0 1px rgba(124,90,31,.55), inset 0 2px 0 rgba(255,255,255,.85), inset 0 -3px 5px rgba(60,40,10,.4)}
+  .piece .frame{position:absolute;inset:9px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none;z-index:3}
+  .piece::after{content:"";position:absolute;top:-25%;left:-20%;width:65%;height:55%;background:radial-gradient(circle, rgba(255,255,255,.5), transparent 70%);pointer-events:none;mix-blend-mode:screen;z-index:4}
+  .piece img{width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;display:block;filter:saturate(1.05) contrast(1.02)}
+  .piece .shine{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(75deg, transparent, rgba(255,255,255,.12), transparent);transform:skewX(-18deg);pointer-events:none;z-index:2}
+  .piece .meta{padding:12px 20px 16px;position:relative;display:flex;flex-direction:column}
+  .piece .num{font-family:'Montserrat';font-size:11px;letter-spacing:2px;color:var(--gold-3)}
+  .piece .divider{width:32px;height:2px;background:linear-gradient(90deg,var(--gold-1),var(--gold-3));margin:6px 0 7px;box-shadow:0 0 6px rgba(212,175,55,.6)}
+  .piece h4{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--cream);
+    line-height:1.1;min-height:2.2em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .piece .loc{font-family:'Barlow Semi Condensed',sans-serif;font-style:italic;color:var(--text-muted);font-size:12px;margin-top:3px;text-align:left;
+    line-height:1.32;height:4.4em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  /* Görsel çerçevesi — tüm görünümlerde ortak: ince gold border + 3D kabartma */
+  .piece .img-wrap{position:relative;width:calc(100% - 24px);margin:12px 12px 0;aspect-ratio:3/4;overflow:hidden;border-radius:5px;box-sizing:border-box;
+    border:1.5px solid var(--gold-1);
+    box-shadow:
+      0 8px 18px -9px rgba(60,40,10,.5),
+      0 0 0 1px rgba(138,106,44,.35),
+      inset 0 2px 3px rgba(255,255,255,.65),
+      inset 0 -4px 7px rgba(45,30,8,.55),
+      inset 3px 0 5px -3px rgba(255,255,255,.35),
+      inset -3px 0 5px -3px rgba(45,30,8,.4);}
+  .piece .img-wrap .img-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+    filter:saturate(1.05) contrast(1.02);opacity:0;transition:opacity 1.05s ease}
+  .piece .img-wrap .img-layer.active{opacity:1;z-index:1}
+  /* Görsel bulunamadığında gösterilecek zarif yer tutucu — kırık resim ikonu yerine */
+  .img-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:14px;gap:6px;z-index:2;
+    background:linear-gradient(160deg,#ece2c8,#d9caa4);color:var(--text-muted)}
+  .img-fallback .fb-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold-2)}
+  .img-fallback .fb-sub{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}
+  .img-wrap.broken .img-fallback, .img-box.broken .img-fallback{display:flex}
+  .img-wrap.broken .img-layer, .img-box.broken img{opacity:0!important}
+  .img-box{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden}
+  .img-box img{width:100%;height:100%}
+  .more-link{display:block;text-align:center;margin-top:40px;color:var(--gold-2);letter-spacing:2px;font-size:12px;text-transform:uppercase;text-decoration:none}
+
+  /* Kategori galerisi — önceki/sonraki gezinme */
+  .cat-nav{display:none;align-items:center;justify-content:center;gap:22px;margin-top:40px}
+  .cat-nav-btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(138,106,44,.4);
+    background:var(--card);color:var(--gold-2);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 18px -10px rgba(0,0,0,.4);transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease}
+  .cat-nav-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 22px -10px rgba(0,0,0,.5)}
+  .cat-nav-btn:disabled{opacity:.3;cursor:default}
+  .cat-nav-count{font-family:'Cormorant Garamond',serif;font-size:15px;letter-spacing:1px;color:var(--text-soft);min-width:110px;text-align:center}
+
+  /* Kategori giriş kartı — görsellerden önce gösterilen tanıtım metni */
+  .cat-intro{text-align:left;position:relative;
+    border:6px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:
+      0 26px 48px -18px rgba(0,0,0,.6),
+      0 0 0 1px rgba(124,90,31,.4),
+      inset 0 2px 0 rgba(255,255,255,.75),
+      inset 0 -4px 8px rgba(60,40,10,.4),
+      inset 4px 0 8px -4px rgba(255,255,255,.35),
+      inset -4px 0 8px -4px rgba(45,30,8,.4);}
+  .cat-intro::before{display:none}
+  .cat-intro::after{content:"";position:absolute;inset:10px;border:1px solid rgba(255,255,255,.5);border-radius:4px;pointer-events:none}
+  .cat-intro h3{text-align:center;text-transform:uppercase;letter-spacing:2px;font-size:26px}
+  .cat-intro-btn{display:block!important;width:max-content;margin:28px auto 0!important;border:none;cursor:pointer;font-family:'Montserrat',sans-serif}
+
+
+  /* Eserler — kategori kartları (Tümü görünümü) & alt galeri */
+  .cat-active-label{text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:var(--gold-2);margin:-24px 0 34px}
+  .piece{cursor:pointer}
+  .piece .cat-eyebrow{font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:2px}
+
+  .empty-note{grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:14px;padding:30px 0}
+
+  /* Lightbox / slayt gösterisi */
+  .lightbox{position:fixed;inset:0;background:rgba(14,10,5,.94);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;padding:40px 96px}
+  .lightbox.open{display:flex}
+  .lightbox img{width:auto;height:auto;max-width:min(88vw,1200px);max-height:80vh;object-fit:contain;border-radius:6px;box-shadow:0 30px 70px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(212,175,55,.25);border:6px solid transparent;border-image:var(--ribbon-frame) 1;background:#0e0a05;display:block}
+  .lb-img-wrap{position:relative;display:flex;align-items:center;justify-content:center;
+    max-width:min(94vw,1400px);max-height:80vh}
+  .lb-watermark{position:absolute;right:18px;bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;user-select:none;z-index:2;text-align:center}
+  .lb-watermark-badge{width:52px;height:52px;display:flex;align-items:center;justify-content:center}
+  .lb-watermark-badge img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border:none;border-image:none;border-radius:0;box-shadow:none;background:none;-webkit-user-drag:none;user-select:none}
+  .lb-watermark span{font-family:'Montserrat',sans-serif;font-weight:400;font-size:10px;letter-spacing:.5px;
+    color:rgba(255,246,223,.85);text-shadow:0 1px 3px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.5)}
+  .lightbox img.broken{display:none}
+  .lb-fallback{display:none;width:min(920px,88vw);height:min(64vh,420px);border-radius:4px;align-items:center;justify-content:center;
+    flex-direction:column;gap:8px;background:linear-gradient(160deg,#ece2c8,#d9caa4);color:#5a4d38;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.12)}
+  .lb-fallback.show{display:flex}
+  .lb-fallback .fb-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#8a6a2c}
+  .lb-fallback .fb-sub{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8f8168}
+  .lb-meta{text-align:center;margin-top:22px;max-width:640px}
+  .lb-meta h4{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:24px;color:#fff8ea}
+  .lb-meta p{color:#cdbfa2;font-size:14px;margin-top:6px;line-height:1.7;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .lb-meta .lb-counter{display:block;margin-top:10px;font-size:11px;letter-spacing:2px;color:var(--gold-1);text-transform:uppercase}
+  .lb-close{position:absolute;top:22px;right:30px;background:none;border:none;color:#e8dcc3;font-size:34px;cursor:pointer;line-height:1;opacity:.85}
+  .lb-close:hover{opacity:1;color:var(--gold-1)}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);color:#f7f2e7;width:52px;height:52px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .lb-nav:hover{background:rgba(212,175,55,.25);border-color:var(--gold-1)}
+  .lb-prev{left:-72px}
+  .lb-next{right:-72px}
+  @media (max-width:640px){
+    /* Mobilde önceki/sonraki oklar görselin altında, iki yanda */
+    .lb-img-wrap{position:relative}
+    .lb-nav{width:46px;height:46px;font-size:18px;top:auto;transform:none;
+      bottom:-64px}
+    .lb-prev{left:calc(50% - 70px)}
+    .lb-next{right:calc(50% - 70px)}
+    .lb-meta{margin-top:70px}
+  }
+
+  /* Yurtdışı timeline — arşiv kartı estetiğiyle uyumlu */
+  .timeline{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .t-item{display:flex;align-items:center;gap:16px;position:relative;
+    padding:16px 22px 16px 26px;border-radius:10px;
+    background:linear-gradient(160deg, rgba(201,150,46,.06), rgba(255,255,255,0) 55%), var(--card);
+    border:1px solid rgba(138,106,44,.28);
+    box-shadow:0 12px 28px -22px rgba(0,0,0,.5);
+    transition:box-shadow .3s ease, border-color .3s ease, transform .25s ease}
+  .t-item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:linear-gradient(180deg,var(--gold-1),var(--gold-3));opacity:.55;
+    border-radius:10px 0 0 10px;transition:opacity .25s ease}
+  .t-item:hover{border-color:var(--gold-3);box-shadow:0 18px 36px -22px rgba(0,0,0,.55);transform:translateX(2px)}
+  .t-item:hover::before{opacity:1}
+  .t-item b{flex:0 0 auto;font-family:'Montserrat';font-weight:600;font-size:12.5px;letter-spacing:1px;
+    padding:6px 14px;border-radius:999px;
+    background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    color:#3a2c10;box-shadow:0 4px 12px -6px rgba(138,106,44,.6)}
+  .t-item span{color:var(--text-soft);font-size:14.5px;line-height:1.4}
+
+  /* Arşiv accordion */
+  .archive{max-width:860px;margin:0 auto}
+  details{background:linear-gradient(160deg, rgba(201,150,46,.05), rgba(255,255,255,0) 45%), var(--card);
+    border:1px solid rgba(138,106,44,.28);border-radius:10px;margin-bottom:14px;overflow:hidden;
+    box-shadow:0 12px 28px -22px rgba(0,0,0,.5);transition:box-shadow .3s ease, border-color .3s ease}
+  details[open]{border-color:var(--gold-3);box-shadow:0 18px 38px -22px rgba(0,0,0,.55)}
+  summary{cursor:pointer;position:relative;padding:20px 26px 20px 30px;
+    font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--cream);
+    display:flex;justify-content:space-between;align-items:center;gap:16px;list-style:none;
+    transition:background .25s ease}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:linear-gradient(180deg,var(--gold-1),var(--gold-3));opacity:.55;transition:opacity .25s ease}
+  details[open] summary::before{opacity:1}
+  summary:hover{background:rgba(201,150,46,.06)}
+  summary .yr{background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  .summary-right{display:flex;align-items:center;gap:14px}
+  summary .cnt{font-family:'Montserrat';font-size:10.5px;letter-spacing:1.5px;color:var(--gold-2);
+    text-transform:uppercase;padding:5px 12px;border-radius:999px;
+    background:rgba(201,150,46,.10);border:1px solid rgba(138,106,44,.3)}
+  summary .chev{flex:0 0 auto;width:18px;height:18px;color:var(--gold-2);transition:transform .3s ease}
+  details[open] summary .chev{transform:rotate(180deg)}
+  details ul{list-style:none;padding:6px 24px 22px;display:flex;flex-direction:column;gap:8px}
+  details li{display:flex;align-items:flex-start;gap:11px;padding:10px 15px;border-radius:6px;
+    background:linear-gradient(160deg, rgba(201,150,46,.08), rgba(201,150,46,.03));
+    border:1px solid rgba(138,106,44,.24);color:var(--text-soft);font-size:14px;line-height:1.5}
+  details li::before{content:"";flex:0 0 auto;margin-top:6px;width:6px;height:6px;border-radius:50%;
+    background:linear-gradient(135deg,var(--gold-1),var(--gold-3));box-shadow:0 0 5px rgba(201,150,46,.55)}
+  /* Yıl ön ekli maddeler: yurtdışı çizelgesiyle aynı pill rozeti */
+  details li.has-year{align-items:center}
+  details li.has-year::before{margin-top:0}
+  details li b{flex:0 0 auto;font-family:'Montserrat';font-weight:600;font-size:11.5px;letter-spacing:.8px;
+    padding:5px 12px;border-radius:999px;
+    background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+    color:#3a2c10;box-shadow:0 4px 12px -6px rgba(138,106,44,.6)}
+
+  /* Dekor/Aksesuar */
+  .decor-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:24px;max-width:1180px;margin:0 auto}
+  .decor-col{background:var(--card);border:1px solid rgba(138,106,44,.25);border-radius:8px;padding:26px 24px}
+  .decor-col h4{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold-2);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(138,106,44,.2)}
+  .decor-col ul{list-style:none;color:var(--text-soft);font-size:14px;line-height:2.1}
+  /* Marka etiketleri: alt alta, hizalı, şekilli */
+  .brand-tags{list-style:none;display:flex;flex-direction:column;gap:8px;margin:0}
+  .brand-tags li{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px;
+    background:linear-gradient(160deg, rgba(201,150,46,.10), rgba(201,150,46,.04));
+    border:1px solid rgba(138,106,44,.28);color:var(--cream);font-size:13.5px;letter-spacing:.4px;
+    line-height:1.3;font-weight:400}
+  .brand-tags li::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:50%;
+    background:linear-gradient(135deg,var(--gold-1),var(--gold-3));box-shadow:0 0 5px rgba(201,150,46,.55)}
+
+  /* İletişim */
+  .contact-card{max-width:760px;margin:0 auto;padding:44px 48px;border-radius:8px;background:var(--card);
+    border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 22px 44px -20px rgba(0,0,0,.5);text-align:center}
+  .contact-card p.big{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:24px;color:var(--gold-2);margin-bottom:28px}
+  .c-row{display:flex;justify-content:center;gap:34px;flex-wrap:wrap;margin-bottom:28px;font-size:14px;color:var(--text-soft)}
+  .c-row a{color:var(--text-soft);text-decoration:none}
+  .c-row a:hover{color:var(--gold-1)}
+  .wa-btn{display:inline-block;padding:15px 34px;border-radius:6px;background:linear-gradient(135deg,var(--gold-1),var(--gold-3));color:#fffdf8;letter-spacing:1.5px;font-size:13px;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px -10px rgba(138,106,44,.6)}
+  .addr{margin-top:22px;font-size:12.5px;color:var(--text-muted)}
+
+  /* İki adres + harita */
+  .contact-locations{max-width:1100px;margin:40px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .loc-card{background:var(--card);border-radius:8px;overflow:hidden;text-align:left;
+    border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+    box-shadow:0 18px 38px -20px rgba(0,0,0,.45);display:flex;flex-direction:column}
+  .loc-card-head{padding:20px 24px 14px}
+  .loc-tag{font-size:10.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-2);margin-bottom:8px}
+  .loc-card-head h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:21px;color:var(--cream);margin-bottom:8px}
+  .loc-card-head .loc-addr{font-size:13px;line-height:1.7;color:var(--text-soft)}
+  .loc-map{width:100%;height:230px;background:linear-gradient(160deg,#ece2c8,#d9caa4);position:relative}
+  .loc-map .leaflet-container{width:100%;height:100%;background:#e8ddc4}
+  .loc-marker-logo{width:44px;height:44px;border-radius:50%;overflow:hidden;
+    border:3px solid #fff;background:#fffdf8;
+    box-shadow:0 6px 16px -4px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}
+  .loc-marker-logo img{width:100%;height:100%;object-fit:contain;display:block}
+  .loc-card-foot{padding:16px 24px 22px;margin-top:auto;text-align:center}
+  .loc-dir-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:6px;
+    background:linear-gradient(135deg,var(--gold-1),var(--gold-3));color:#fffdf8;letter-spacing:1.2px;
+    font-size:12px;text-transform:uppercase;text-decoration:none;
+    box-shadow:0 10px 22px -10px rgba(138,106,44,.6)}
+  .loc-dir-btn:hover{filter:brightness(1.05)}
+  @media(max-width:820px){.contact-locations{grid-template-columns:1fr}}
+
+  footer{text-align:center;padding:44px;color:var(--text-muted);font-size:11.5px;letter-spacing:1.5px;border-top:1px solid rgba(138,106,44,.15)}
+
+/* ===================== ADMIN PANEL ===================== */
+.seal{cursor:pointer;user-select:none;-webkit-user-select:none}
+.admin-overlay{position:fixed;inset:0;background:rgba(14,10,5,.82);z-index:200;display:none;
+  align-items:center;justify-content:center;padding:24px}
+.admin-overlay.open{display:flex}
+.admin-box{background:var(--card);border-radius:10px;max-width:520px;width:100%;
+  border:5px solid transparent;border-image:var(--ribbon-frame) 1;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.7);padding:30px 32px;position:relative;
+  max-height:86vh;overflow-y:auto}
+.admin-box h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;color:var(--gold-2);margin-bottom:10px}
+.admin-pw-hint{color:var(--text-soft);font-size:13.5px;line-height:1.6;margin-bottom:16px}
+.admin-input{width:100%;padding:12px 14px;border-radius:6px;border:1px solid rgba(138,106,44,.35);
+  background:#fffdf8;color:var(--cream);font-family:'Montserrat',sans-serif;font-size:14px;margin-bottom:8px}
+.admin-input:focus{outline:none;border-color:var(--gold-1)}
+.admin-pw-error{color:#a33;font-size:12.5px;margin-bottom:6px;display:none}
+.admin-pw-error.show{display:block}
+.admin-btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+.admin-btn{padding:10px 22px;border-radius:999px;border:1px solid var(--gold-1);
+  background:linear-gradient(135deg,var(--gold-1),var(--gold-3));color:#fff8ea;
+  font-family:'Montserrat';font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;
+  cursor:pointer;transition:.2s}
+.admin-btn:hover{filter:brightness(1.08)}
+.admin-btn-ghost{background:transparent;color:var(--gold-2)}
+.admin-panel-box{max-width:760px}
+.admin-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.admin-close{background:none;border:none;font-size:26px;color:var(--text-muted);cursor:pointer;line-height:1}
+.admin-close:hover{color:var(--gold-1)}
+.admin-fields{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+.admin-field{border:1px solid rgba(138,106,44,.25);border-radius:8px;padding:14px 16px}
+.admin-field-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.admin-field-label{flex:1;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-2);font-weight:600}
+.admin-thumb{width:54px;height:54px;flex:none;border-radius:6px;overflow:hidden;background:linear-gradient(160deg,#ece2c8,#d9caa4);
+  border:2px solid transparent;border-image:var(--ribbon-frame) 1;display:flex;align-items:center;justify-content:center}
+.admin-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.admin-thumb.empty::after{content:"—";font-size:11px;color:var(--text-muted)}
+.admin-field label{display:block;font-size:11.5px;color:var(--text-muted);margin:8px 0 4px}
+.admin-field textarea{resize:vertical;min-height:64px;font-family:'Montserrat',sans-serif}
+.admin-field-hint{font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.5}
+#adminImgFields{max-height:50vh;overflow-y:auto;padding-right:6px}
+.admin-panel-actions{justify-content:space-between}
+.admin-save-note{margin-top:12px;color:#3a7a4a;font-size:12.5px;text-align:right;display:none}
+.admin-save-note.show{display:block}
+.admin-tabs{display:flex;gap:6px;margin:12px 0 4px;border-bottom:1px solid rgba(138,106,44,.25);flex-wrap:wrap}
+.admin-tab{padding:9px 16px;border:none;background:none;color:var(--text-muted);font-family:'Montserrat';
+  font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.admin-tab.active{color:var(--gold-2);border-bottom-color:var(--gold-1)}
+.admin-tab-panel{display:none}
+.admin-tab-panel.active{display:block}
+@media (max-width:640px){.admin-box{padding:22px 20px}}
+.admin-io{margin-top:18px;padding-top:16px;border-top:1px solid rgba(138,106,44,.25)}
+.admin-io-note{margin-top:10px;font-size:12.5px;text-align:right;display:none}
+.admin-io-note.show{display:block}
+.admin-io-note.ok{color:#3a7a4a}
+.admin-io-note.err{color:#b5432f}
+
+/* ===================== AÇILIŞ INTRO ===================== */
+#introOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(900px 600px at 50% 42%, #241a0e 0%, #17110a 55%, #0d0905 100%);
+  overflow:hidden;transition:opacity .9s ease, visibility .9s ease}
+#introOverlay.hide{opacity:0;visibility:hidden;pointer-events:none}
+#introOverlay .intro-glow{position:absolute;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(circle, rgba(201,150,46,.22) 0%, rgba(201,150,46,0) 68%);
+  filter:blur(6px);opacity:0;animation:introGlow 3s ease forwards}
+#introOverlay .intro-logo{position:relative;width:200px;max-width:52vw;
+  filter:drop-shadow(0 18px 40px rgba(0,0,0,.6));
+  transform:scale(.25);opacity:0;animation:introLogo 3s cubic-bezier(.22,.61,.36,1) forwards}
+#introOverlay .intro-logo img{width:100%;height:100%;object-fit:contain;display:block}
+#introOverlay .intro-brand{position:absolute;bottom:16%;left:0;right:0;text-align:center;
+  font-family:'Cormorant',serif;font-style:italic;font-size:26px;letter-spacing:1px;
+  background:linear-gradient(135deg,#fff6df 0%,#f0d68a 25%,#c9962e 50%,#8a6a2c 75%,#e9c877 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  opacity:0;animation:introBrand 3s ease forwards}
+#introOverlay .intro-brand span{display:block;font-family:'Montserrat';font-style:normal;font-size:10px;
+  letter-spacing:4px;text-transform:uppercase;color:#b79a5f;margin-top:6px;-webkit-text-fill-color:#b79a5f}
+@keyframes introLogo{
+  0%{transform:scale(.25);opacity:0}
+  55%{opacity:1}
+  70%{transform:scale(1.06)}
+  82%{transform:scale(1)}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes introGlow{0%{opacity:0;transform:scale(.6)}60%{opacity:1;transform:scale(1)}100%{opacity:.85;transform:scale(1.05)}}
+@keyframes introBrand{0%,45%{opacity:0;transform:translateY(10px)}75%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+body.intro-lock{overflow:hidden}
+@media (prefers-reduced-motion:reduce){
+  #introOverlay .intro-logo,#introOverlay .intro-glow,#introOverlay .intro-brand{animation-duration:.6s}
+}
+
+/* ===================== HAMBURGER (mobil menü) ===================== */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;width:42px;height:42px;
+  background:none;border:1px solid rgba(138,106,44,.3);border-radius:8px;cursor:pointer;padding:0 9px;z-index:30}
+.nav-toggle span{display:block;height:2px;width:100%;background:var(--gold-2);border-radius:2px;
+  transition:transform .3s ease, opacity .25s ease}
+.nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ===================== RESPONSIVE / MOBİL UYUM ===================== */
+@media (max-width:1024px){
+  header{padding:18px 32px}
+  .hero{padding:100px 32px 80px}
+  section{padding:60px 32px}
+  h1{font-size:clamp(38px,7vw,60px)}
+  .about-wrap{grid-template-columns:1fr;gap:24px}
+}
+
+@media (max-width:768px){
+  header{padding:14px 20px;flex-wrap:wrap}
+  .nav-toggle{display:flex}
+  nav#mainNav{display:none;flex-direction:column;align-items:flex-start;gap:0;
+    width:100%;margin-top:14px;order:3;
+    border-top:1px solid rgba(138,106,44,.18)}
+  nav#mainNav.open{display:flex}
+  nav#mainNav a{margin-left:0;width:100%;padding:13px 4px;font-size:13px;
+    border-bottom:1px solid rgba(138,106,44,.12)}
+  nav#mainNav a:last-child{border-bottom:none}
+  .logo{font-size:21px}
+
+  .hero{padding:80px 20px 70px;min-height:auto}
+  h1{font-size:clamp(32px,9vw,46px)}
+  .eyebrow{font-size:11px;letter-spacing:3.5px}
+  .sub{font-size:14.5px;line-height:1.7}
+
+  section{padding:48px 20px}
+  /* Mobilde eserler bölümü: kategori çipleri gizli, sadece 'Tümü' mantığı */
+  .cat-chips{display:none}
+  .cat-active-label.back-link{cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+    margin:-8px auto 30px;padding:9px 20px;border:1px solid rgba(138,106,44,.4);border-radius:999px;
+    font-style:normal;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;
+    background:rgba(201,150,46,.08)}
+  .cat-active-label.back-link::before{content:"\2039";font-size:18px;line-height:1;margin-top:-2px}
+  .section-head h2{font-size:28px}
+  .lede{font-size:14px;margin:-14px auto 32px}
+
+  /* İstatistik şeridi: 2'li grid */
+  .stats-strip{gap:20px 0;padding-top:26px;margin-top:36px}
+  .stat{flex:0 0 50%;min-width:0;padding:10px 12px;border-left:none}
+  .stat b{font-size:40px}
+  .stat span{font-size:10.5px;letter-spacing:1.2px}
+
+  .seal{width:140px;height:140px}
+  .seal-wrap{margin-top:-70px}
+
+  /* Hakkında */
+  .about-person-name{font-size:22px}
+  .about-united p{font-size:15px;line-height:1.85;text-align:justify;text-justify:inter-word;hyphens:auto}
+  .about-pull{font-size:20px}
+  .about-roles{gap:34px}
+  .about-roles div{width:100%}
+  .person-photo{width:170px;margin-left:auto;margin-right:auto}
+
+  /* Aşırı gerçekçilik kartı */
+  .hyper-card{padding:32px 22px;margin-bottom:36px}
+  .hyper-card h3{font-size:23px}
+  .hyper-card p{font-size:15px;line-height:1.8;text-align:justify;text-justify:inter-word;hyphens:auto}
+
+  /* Zaman çizelgesi */
+  .t-item{padding:14px 18px 14px 22px;gap:12px}
+  .t-item b{font-size:11.5px;padding:5px 12px}
+  .t-item span{font-size:13.5px}
+
+  /* Dekor sütunları tek kolon */
+  .decor-cols{grid-template-columns:1fr;gap:16px}
+  .decor-col{padding:22px 20px}
+
+  /* Arşiv */
+  summary{padding:16px 20px 16px 24px;font-size:18px}
+  summary .cnt{font-size:9.5px;padding:4px 10px}
+  details li{font-size:13.5px;padding:9px 13px}
+
+  /* İletişim */
+  .contact-card{padding:32px 22px}
+  .contact-card p.big{font-size:20px}
+  .c-row{gap:18px;font-size:13.5px}
+  .wa-btn{padding:14px 28px;font-size:12px}
+  .loc-map{height:200px}
+
+  /* Lightbox */
+  .lightbox{padding:24px 12px}
+  .lightbox img{max-height:66vh}
+
+  footer{padding:34px 20px;font-size:10.5px}
+}
+
+@media (max-width:400px){
+  .stat{flex:0 0 100%}
+  h1{font-size:clamp(28px,10vw,38px)}
+  .logo span{font-size:9px;letter-spacing:2px}
+}
+</style>
+</head>
+<body>
+<div id="introOverlay">
+  <div class="intro-glow"></div>
+  <div class="intro-logo"><img src="assets/main/logo.webp" alt="bisanat"></div>
+  <div class="intro-brand">bisanat<span>Bülent İşcan</span></div>
+</div>
+<script>
+(function(){
+  var overlay = document.getElementById('introOverlay');
+  if(!overlay) return;
+  document.body.classList.add('intro-lock');
+  function dismiss(){
+    overlay.classList.add('hide');
+    document.body.classList.remove('intro-lock');
+    setTimeout(function(){ if(overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 1000);
+  }
+  var timer = setTimeout(dismiss, 3000); /* 3 sn sonra sayfaya geç */
+  /* Kullanıcı dokunursa/tıklarsa erken geç */
+  overlay.addEventListener('click', function(){ clearTimeout(timer); dismiss(); });
+})();
+</script>
+
+<header>
+  <div class="logo" id="adminTriggerHeader">bisanat<span>Bülent &amp; Şenay İşcan</span></div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menü" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="mainNav">
+    <a href="#anasayfa">Anasayfa</a><a href="#hakkinda">Hakkında</a><a href="#hiperrealizm">Aşırı Gerçekçilik</a>
+    <a href="#eserler">Eserler</a><a href="#yurtdisi">Yurtdışı</a><a href="#arsiv">Arşiv</a><a href="#iletisim">İletişim</a>
+  </nav>
+</header>
+
+<div class="hero" id="anasayfa">
+  <div class="hero-bg">
+    <div class="hero-bg-layer active" style="background-image:url('assets/main/hero.webp')"></div>
+    <div class="hero-bg-layer" style="background-image:url('assets/main/hero-1.webp')"></div>
+    <div class="hero-bg-layer" style="background-image:url('assets/main/hero-2.webp')"></div>
+    <div class="hero-bg-layer" style="background-image:url('assets/main/hero-3.webp')"></div>
+    <div class="hero-bg-layer" style="background-image:url('assets/main/hero-4.webp')"></div>
+    <div class="hero-bg-layer" style="background-image:url('assets/main/hero-5.webp')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <div class="eyebrow" id="heroEyebrow">bisanat atölyesi</div>
+    <h1 id="heroTitle">Gerçeğin ötesinde<br>bir <em>gerçeklik.</em></h1>
+    <p class="sub" id="heroSub"><span class="brand-hl">bisanat</span> atölyesinde her eser, gerçeğin sınırlarını zorlayan bir tutkuyla doğar. Bülent İşcan'ın hiperrealist heykelleri, Şenay İşcan'ın usta sanat yönetmenliğiyle buluşunca tarih artık anlatılmaz — karşınızda nefes alır.</p>
+  </div>
+  <div class="stats-strip">
+    <div class="stat"><b id="stat1Num">1000+</b><span id="stat1Label">Üretilen hiperrealist eser</span></div>
+    <div class="stat"><b id="stat2Num">90+</b><span id="stat2Label">Yurt içi müze projesi</span></div>
+    <div class="stat"><b id="stat3Num">10</b><span id="stat3Label">Ülkede sergilenen eser</span></div>
+    <div class="stat"><b id="stat4Num">20+</b><span id="stat4Label">Yıl sinema / TV deneyimi</span></div>
+  </div>
+</div>
+
+<div class="seal-wrap">
+  <div class="seal-line"></div>
+  <div class="seal" id="adminTrigger"><img src="assets/main/logo.webp" alt="bisanat logo"></div>
+</div>
+
+
+<section id="hakkinda">
+  <div class="section-head"><div class="eyebrow">Atölyenin ruhu</div><h2>Hakkında</h2></div>
+  <div class="about-united">
+
+    <div class="about-person-name">Bülent İşcan</div>
+    <div id="bulentBioWrap" class="bio-collapse collapsed">
+    <p>1972 Tekirdağ doğumlu Bülent İşcan, Marmara Üniversitesi Güzel Sanatlar Fakültesi Resim Bölümü'nden mezun oldu. Yıllarca sinema, TV ve reklam sektörüne dekor, aksesuar ve maket üreten sanatçı, tarihi film ve dizilerde gerçeğe en yakın görünümü sahneye taşıma tutkusuyla 26 yaşında hiperrealist heykel sanatına yöneldi. Her eserine aylarca süren bir emekle can katan sanatçı, kırışıklıktan damar izine, bakışındaki ışıktan ten dokusuna kadar en ince ayrıntıyı tek tek işleyerek heykellerine adeta nefes alan bir gerçeklik kazandıran Bülent İşcan, bugün 70'i aşkın müzede, binin üzerinde eseriyle sergileniyor — Topkapı ve Dolmabahçe Sarayları'ndan Çanakkale Tarihi Alanı'na, yurt dışında Çin'den Azerbaycan'a kadar birçok ülkede eserleri yer alıyor.</p>
+    <p>En çok duygulandığı çalışmalar arasında İstanbul Sinema Müzesi için ürettiği Adile Naşit ve Kemal Sunal heykelleri yer alıyor; yüzlerce fotoğraf ve arşiv taraması sonunda ortaya çıkan bu eserler, bir neslin hafızasını yeniden canlandırdı. İstanbul'daki otuz yıllık atölye hayatının ardından eşi Şenay ile birlikte memleketi Hayrabolu'nun Şalgamlı köyüne yerleşerek üretimini köy sakinleriyle birlikte sürdürmeye başladı; bugün köyde 100'e yakın heykel ortak emekle hayat buluyor.</p>
+    <p>Sanatçının en dikkat çeken son eseri, Çanakkale Savaşları Gelibolu Tarihi Alan Başkanlığı için tasarladığı 4,5 metre yüksekliğindeki Mehmetçik Heykeli oldu — dönemin fedakârlığını ve cesaretini tüm gerçekliğiyle yansıtan bu dev eser, sanatçıya 2024 yılında Tekirdağ Kültür Elçisi unvanını kazandırdı.</p>
+    </div>
+    <div class="bio-more-wrap"><button type="button" class="bio-more" data-target="bulentBioWrap">Devamını oku<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button></div>
+
+    <div class="about-person-name" style="margin-top:48px">Şenay İşcan</div>
+    <div id="senayBioWrap" class="bio-collapse collapsed">
+    <p>Atölyenin sanat yönetmeni ve koordinatörü olan Şenay İşcan, her projenin başında dosyaları inceleyerek iş planını ve görev dağılımını belirliyor, anlaşmaları yürütüyor. Dönemin ruhuna uygun çalışmalar üretebilmek için tarihi belge ve görselleri araştırıyor, eskizleri hazırlıyor. Kostüm tasarımından — kumaş seçimi, nakış, başlık ve aksesuar — heykel üretiminin kalıp, döküm, saç ve yüz ekimi aşamalarına kadar atölyenin sanatsal sürecinin tamamını koordine ediyor; birlikte çalıştıkları ustalar ve zanaatkârlarla eş güdümü sağlıyor.</p>
+    <p>Bunun yanında 15 yıldır Türkiye'nin farklı şehirlerini — Tekirdağ, Gaziantep, Konya, Hatay, Denizli, Niğde, Mardin ve Şanlıurfa başta olmak üzere — dolaşarak cepken, üç etek, çarık, bindallı, tel kırma ve heybe gibi tarihi eşyaları topluyor. Depoladığı bu eserleri talep halinde müzelere ücretsiz teslim ediyor; bugüne dek İslam Eserleri Müzesi, Afyonkarahisar Arkeoloji Müzesi, Adana Etnografya Müzesi ve Necmi İğe Evi Etnografya Müzesi gibi kurumlarla çalıştı. Amaç, geçmişten gelen kültürel değerleri gelecek nesillere taşımak.</p>
+    </div>
+    <div class="bio-more-wrap"><button type="button" class="bio-more" data-target="senayBioWrap">Devamını oku<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button></div>
+
+    <p class="about-pull" id="aboutPull">"Bülent elindeki malzemeye can verir, Şenay o canı dünyaya taşır."</p>
+    <div class="about-roles">
+      <div><div class="person-photo"><img src="assets/main/bulent-iscan.webp" alt="Bülent İşcan" onerror="this.style.display='none';this.parentElement.querySelector('span').style.display='flex'"><span style="display:none">Bülent İşcan<br>2:3 portre</span></div><b>Bülent İşcan</b><span>Heykeltraş · Sanat Yönetmeni</span></div>
+      <div><div class="person-photo"><img src="assets/main/senay-iscan.webp" alt="Şenay İşcan" onerror="this.style.display='none';this.parentElement.querySelector('span').style.display='flex'"><span style="display:none">Şenay İşcan<br>2:3 portre</span></div><b>Şenay İşcan</b><span>Sanat Yönetmeni · Koordinatör</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="hiperrealizm" class="section-alt">
+  <div class="section-head"><div class="eyebrow">Sanatta bir yaklaşım</div><h2>Gerçek mi, heykel mi?</h2></div>
+  <div class="hyper-card">
+    <h3 id="hyperCardTitle">Bülent İşcan İle Gerçeğin Ötesinde Bir Gerçeklik</h3>
+    <div id="hyperCardBodyWrap">
+    <p>Aşırı gerçekçilik, bir yüzü, bir anı ya da bir karakteri fotoğrafik netlikte — hatta çoğu zaman çıplak gözün fark edemeyeceği bir ayrıntı düzeyinde — yeniden üretme sanatıdır. Cilt dokusu, damar izleri, tek tek yerleştirilen kıllar, gözbebeğinin derinliğindeki ışık kırılması... Hiçbir ayrıntı tesadüfe bırakılmaz; her biri, izleyeni "gerçek mi, değil mi" sorusuyla baş başa bırakmak için özenle hesaplanır.</p>
+    <p>Bülent İşcan bu sanata 26 yaşında başladı ve o günden bu yana doğal malzemelerden en son teknolojik materyallere kadar geniş bir yelpazede çalışıyor. Balmumu ve silikon gibi malzemeler, yılların ustalığıyla yavaş yavaş bir yüze dönüşür; her eser, referans fotoğraflarla defalarca kıyaslanarak, saatlerce süren elle uygulanan ayrıntı işçiliğiyle can bulur.</p>
+    <p>Sonuç, bir heykel değil; donmuş bir andır. Ziyaretçi karşısındaki yüze baktığında kendine bir soru sorar: <em class="gold-text">nefes alıyor mu?</em> Aşırı gerçekçiliğin gücü de tam olarak bu şüphede saklıdır.</p>
+    </div>
+  </div>
+  <div class="compare-grid" id="hyperGrid"></div>
+</section>
+
+<section id="eserler">
+  <div class="section-head"><div class="eyebrow">Kategorilere göre</div><h2>Eserler</h2></div>
+  <div class="cat-chips" id="catChips">
+    <span class="chip active" data-cat="all">Tümü</span>
+  </div>
+  <div class="cat-active-label" id="catActiveLabel" style="display:none"></div>
+  <div class="hyper-card cat-intro" id="catIntro" style="display:none">
+    <h3 id="catIntroTitle"></h3>
+    <div id="catIntroBody"></div>
+    <button class="wa-btn cat-intro-btn" id="catIntroBtn">Görselleri Gör</button>
+  </div>
+  <div class="grid" id="eserGrid"></div>
+  <a class="more-link" id="moreLink" href="#arsiv">Tüm arşivi gör →</a>
+  <div class="cat-nav" id="catNav">
+    <button class="cat-nav-btn" id="catPrev" aria-label="Önceki">&#10094;</button>
+    <span class="cat-nav-count" id="catNavCount"></span>
+    <button class="cat-nav-btn" id="catNext" aria-label="Sonraki">&#10095;</button>
+  </div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose" aria-label="Kapat">&times;</button>
+  <div class="lb-img-wrap">
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Önceki">&#10094;</button>
+    <img id="lbImg" src="" alt="">
+    <span class="lb-watermark"><span class="lb-watermark-badge"><img src="assets/main/logo.webp" alt="bisanat logo"></span><span>&copy; Tüm Hakları Saklıdır</span></span>
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Sonraki">&#10095;</button>
+  </div>
+  <div class="lb-fallback" id="lbFallback"><span class="fb-name" id="lbFbName"></span><span class="fb-sub">Görsel eklenmedi</span></div>
+  <div class="lb-meta">
+    <h4 id="lbTitle"></h4>
+    <p id="lbDesc"></p>
+    <span class="lb-counter" id="lbCounter"></span>
+  </div>
+</div>
+
+<div class="lightbox" id="hyperLightbox">
+  <button class="lb-close" id="hyperLbClose" aria-label="Kapat">&times;</button>
+  <div class="lb-img-wrap">
+    <button class="lb-nav lb-prev" id="hyperLbPrev" aria-label="Önceki">&#10094;</button>
+    <img id="hyperLbImg" src="" alt="">
+    <span class="lb-watermark"><span class="lb-watermark-badge"><img src="assets/main/logo.webp" alt="bisanat logo"></span><span>&copy; Tüm Hakları Saklıdır</span></span>
+    <button class="lb-nav lb-next" id="hyperLbNext" aria-label="Sonraki">&#10095;</button>
+  </div>
+  <div class="lb-meta">
+    <h4 id="hyperLbTitle"></h4>
+    <p id="hyperLbDesc"></p>
+    <span class="lb-counter" id="hyperLbCounter"></span>
+  </div>
+</div>
+
+<section id="yurtdisi" class="section-alt">
+  <div class="section-head"><div class="eyebrow">10 ülke</div><h2>Yurt dışı müze çalışmaları</h2></div>
+  <p class="lede">2012'den bu yana Türkiye sınırlarının ötesinde: Körfez'den Uzak Doğu'ya, Balkanlar'dan Avrupa'ya.</p>
+  <div class="timeline">
+    <div class="t-item"><b>2024</b><span>Atatürk'ün Evi Müzesi — Rotterdam, Hollanda</span></div>
+    <div class="t-item"><b>2024</b><span>Jeddah — Suudi Arabistan</span></div>
+    <div class="t-item"><b>2021</b><span>Atatürk'ün Evi Müzesi — Selanik, Yunanistan</span></div>
+    <div class="t-item"><b>2019</b><span>Macao Science Centre — Çin</span></div>
+    <div class="t-item"><b>2019</b><span>Tatweer Science Centre — Suudi Arabistan</span></div>
+    <div class="t-item"><b>2018</b><span>The Mechanics of Banu Musa, Muslim Heritage — Kuveyt</span></div>
+    <div class="t-item"><b>2018</b><span>Gence Nuri Paşa Müzesi — Azerbaycan</span></div>
+    <div class="t-item"><b>2017</b><span>Royal Sciences Academy — Amman, Ürdün</span></div>
+    <div class="t-item"><b>2013</b><span>İçişleri Bakanlığı Sergi Merkezi — Türkmenistan</span></div>
+    <div class="t-item"><b>2012</b><span>Space Centre Museum — Azerbaycan</span></div>
+  </div>
+</section>
+
+<section id="arsiv">
+  <div class="section-head"><div class="eyebrow">Arşiv · 2005—2025</div><h2>Yirmi yıllık üretim</h2></div>
+  <p class="lede">Yurt içi müze projeleri yıllara göre; sinema, dizi ve reklam dekor/aksesuar çalışmaları aşağıda.</p>
+  <div class="archive">
+    <details><summary><span class="yr">2025 +</span><span class="summary-right"><span class="cnt">3 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li>Topkapı Sarayı Müzesi — Şehzadeler ve Cüceler Bölümü</li>
+        <li>İstanbul Tersanesi Komutanlığı — Savarona Gemi Müzesi</li>
+        <li>Çanakkale Deniz Müzesi — Kartal İstimbotu Müzesi</li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2024</span><span class="summary-right"><span class="cnt">8 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li>Topkapı Sarayı Müzesi — Harem, Mutfak, Gözdeler Bölümleri</li>
+        <li>Cizre Müzesi</li>
+        <li>Yıldız Sarayı Müzesi</li>
+        <li>Çanakkale Deniz Müzesi — Nusret Mayın Gemisi Müzesi</li>
+        <li>Elazığ Kent Müzesi</li>
+        <li>Trabzon Kent Müzesi — Kostaki Konağı</li>
+        <li>Afyonkarahisar Müzesi</li>
+        <li>Çanakkale Tarihi Alan Tanıtım Merkezi — "Mehmetçik" Heykeli</li>
+        <li>Denizli Kent Müzesi</li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2023</span><span class="summary-right"><span class="cnt">8 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li>TCG Uluç Ali Reis Denizaltı Müzesi</li>
+        <li>Niğde Kent Müzesi</li>
+        <li>Koç Müzesi, Hasköy</li>
+        <li>Topkapı Sarayı Müzesi — Cariyeler Bölümü</li>
+        <li>Namazgah Tabyası Müzesi, Çanakkale Tarihi Alan Başkanlığı</li>
+        <li>İzmir Arkeoloji Müzesi</li>
+        <li>"Siper Canlandırması", Alçıtepe — Çanakkale</li>
+        <li>İznik Arkeoloji Müzesi</li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2022</span><span class="summary-right"><span class="cnt">11 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li>Bursa Osmanlı Evi Müzesi</li>
+        <li>Afyonkarahisar Arkeoloji Müzesi</li>
+        <li>Kırşehir Arkeoloji Müzesi</li>
+        <li>İstanbul Deniz Müzesi — Piri Reis Sergisi</li>
+        <li>Kilis Müzesi — Alaeddin Yavaşca Evi</li>
+        <li>Iğdır — Kazım Karabekir Sergisi</li>
+        <li>Çanakkale Tanıtım Merkezi — Hint Askerleri</li>
+        <li>Çanakkale Deniz Müzesi — Piri Reis Bölümü</li>
+        <li>İznik Nilüfer Hatun İmareti Müzesi</li>
+        <li>Cibali Karakolu Müzesi</li>
+        <li>İzmit Atatürk Evi Müzesi</li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2021</span><span class="summary-right"><span class="cnt">5 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li>Topkapı Sarayı Müzesi — Mutfak ve Ağalar Koğuşu Bölümü</li>
+        <li>Alçıtepe Yaralı Hastanesi, Çanakkale Alan Başkanlığı</li>
+        <li>Topkapı Sarayı Müzesi — Harem Bölümü</li>
+        <li>Kilis Müzesi</li>
+        <li>Uşak Kent Tarihi Müzesi</li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2016 — 2020</span><span class="summary-right"><span class="cnt">33 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li class="has-year"><b>2020</b><span>Milli Saraylar Resim Müzesi, Dolmabahçe</span></li>
+        <li class="has-year"><b>2020</b><span>Erzurum Arkeoloji Müzesi</span></li>
+        <li class="has-year"><b>2020</b><span>İstanbul Sinema Müzesi, Atlas Pasajı</span></li>
+        <li class="has-year"><b>2020</b><span>Kütahya Müzesi</span></li>
+        <li class="has-year"><b>2020</b><span>Çanakkale Tarihi Alan Başkanlığı, Gezici Müze</span></li>
+        <li class="has-year"><b>2020</b><span>Tarsus Arkeoloji Müzesi</span></li>
+        <li class="has-year"><b>2020</b><span>Amasra Bartın Arkeoloji Müzesi</span></li>
+        <li class="has-year"><b>2019</b><span>Edirne Hıdırlık Tabyaları Tarih Müzesi</span></li>
+        <li class="has-year"><b>2019</b><span>TİEM Türk İslam Eserleri Etnografya Müzesi</span></li>
+        <li class="has-year"><b>2019</b><span>İstanbul Kazım Karabekir Vakfı Müzesi</span></li>
+        <li class="has-year"><b>2019</b><span>İstanbul Cezeri Müzesi</span></li>
+        <li class="has-year"><b>2019</b><span>Kabatepe Tanıtım Merkezi, Çanakkale</span></li>
+        <li class="has-year"><b>2019</b><span>Tunceli Müzesi</span></li>
+        <li class="has-year"><b>2018</b><span>Fındıklı Sahil Yolu Sergisi, Rize</span></li>
+        <li class="has-year"><b>2018</b><span>Erzurum Atatürk Evi Müzesi</span></li>
+        <li class="has-year"><b>2018</b><span>Ahmet Gazi Türbesi Müzesi, Beçin — Muğla</span></li>
+        <li class="has-year"><b>2018</b><span>Alçıtepe Yaralı Hastanesi Sergi Alanı, Çanakkale</span></li>
+        <li class="has-year"><b>2018</b><span>Eskişehir Eti Şehir ve Göç Müzesi</span></li>
+        <li class="has-year"><b>2018</b><span>Topkapı Sarayı Mutfaklar Bölümü Sergisi</span></li>
+        <li class="has-year"><b>2017</b><span>Topkapı Sarayı, 3. Ahmet Kütüphanesi</span></li>
+        <li class="has-year"><b>2017</b><span>Kayseri Atatürk Müzesi</span></li>
+        <li class="has-year"><b>2017</b><span>Adana Arkeoloji Müzesi</span></li>
+        <li class="has-year"><b>2017</b><span>Kilitbahir Kalesi Müzesi, Çanakkale</span></li>
+        <li class="has-year"><b>2017</b><span>Hamidiye Tabyaları Çanakkale Tarih Müzesi</span></li>
+        <li class="has-year"><b>2017</b><span>Kabatepe Tanıtım Merkezi, Çanakkale</span></li>
+        <li class="has-year"><b>2017</b><span>Türvak Sinema Müzesi</span></li>
+        <li class="has-year"><b>2016</b><span>Biruni Üniversitesi Sergisi</span></li>
+        <li class="has-year"><b>2016</b><span>Ahlat Müzesi, Bitlis</span></li>
+        <li class="has-year"><b>2016</b><span>Gaziantep Belediyesi Meydan Park Sergisi</span></li>
+        <li class="has-year"><b>2016</b><span>Edirne Uzunköprü Atatürk Kültür Merkezi</span></li>
+        <li class="has-year"><b>2016</b><span>Kırklareli Türk Ocağı Müzesi</span></li>
+        <li class="has-year"><b>2016</b><span>Gaziantep Hamam Müzesi</span></li>
+        <li class="has-year"><b>2016</b><span>Trabzon Etnografya Müzesi</span></li>
+        <li class="has-year"><b>2016</b><span>Konya Selçuklu Müzesi</span></li>
+      </ul>
+    </details>
+    <details><summary><span class="yr">2005 — 2015</span><span class="summary-right"><span class="cnt">23 proje</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></summary>
+      <ul>
+        <li class="has-year"><b>2015</b><span>Kayseri Milli Mücadele Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Çanakkale Simülasyon Merkezi Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Hoca Paşa Kültür Merkezi</span></li>
+        <li class="has-year"><b>2015</b><span>Şişli Atatürk Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Konya Zindankale Anadolu Selçuklu Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Trabzon Kent Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Gaziantep Hamam Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>Hatay Mutfak Müzesi</span></li>
+        <li class="has-year"><b>2015</b><span>İzmir Atatürk Müzesi</span></li>
+        <li class="has-year"><b>2014</b><span>Türvak Sinema Müzesi</span></li>
+        <li class="has-year"><b>2014</b><span>Adana Etnografya Müzesi</span></li>
+        <li class="has-year"><b>2014</b><span>Şanlıurfa Arkeoloji ve Mozaik Müzesi</span></li>
+        <li class="has-year"><b>2013</b><span>Edirne Uzunköprü Müzesi</span></li>
+        <li class="has-year"><b>2013</b><span>Bitlis Ahlat Müzesi</span></li>
+        <li class="has-year"><b>2013</b><span>Hatay Arkeoloji Müzesi</span></li>
+        <li class="has-year"><b>2012</b><span>Aşiyan Müzesi</span></li>
+        <li class="has-year"><b>2011</b><span>Galata Mevlevihanesi Müzesi</span></li>
+        <li class="has-year"><b>2010</b><span>Galatasaray Spor Kulübü Müzesi</span></li>
+        <li class="has-year"><b>2009</b><span>Mardin Sakıp Sabancı Kent Müzesi</span></li>
+        <li class="has-year"><b>2008</b><span>Kuvai Milliye Müzesi, Aydın</span></li>
+        <li class="has-year"><b>2005</b><span>Fenerbahçe Spor Kulübü Müzesi</span></li>
+      </ul>
+    </details>
+  </div>
+</section>
+
+<section class="section-alt">
+  <div class="section-head"><div class="eyebrow">Dekor / Aksesuar</div><h2>Sinema, dizi, reklam ve fotoğraf</h2></div>
+  <p class="lede">Yirmi yılı aşkın süredir sinema, TV ve reklam sektörüne üretilen dekor ve aksesuarlardan bir seçki.</p>
+  <div class="decor-cols">
+    <div class="decor-col"><h4>Sinema Filmleri</h4><ul class="brand-tags">
+      <li>Pek Yakında (2014) — Y. Cem Yılmaz</li>
+      <li>Mahmut ile Meryem (2013)</li>
+      <li>Çanakkale Savaşı (2012)</li>
+      <li>Eve Dönüş (2012)</li>
+      <li>Eyvah Eyvah 2 (2010)</li>
+      <li>Av Mevsimi (2010) — Y. Yavuz Turgul</li>
+      <li>Veda (2009) — Y. Zülfü Livaneli</li>
+      <li>Gönül Yarası (2004)</li>
+    </ul></div>
+    <div class="decor-col"><h4>Dizi Çalışmaları</h4><ul class="brand-tags">
+      <li>Kurt Seyt ve Şura (2013)</li>
+      <li>Muhteşem Yüzyıl (2012)</li>
+      <li>Fatmagül'ün Suçu Ne? (2012)</li>
+      <li>Kurtlar Vadisi Pusu (2007)</li>
+      <li>Ihlamurlar Altında (2007)</li>
+      <li>Acı Hayat (2006)</li>
+      <li>Avrupa Yakası (2005)</li>
+      <li>Hürrem Sultan (2002)</li>
+    </ul></div>
+    <div class="decor-col"><h4>TV Reklamları</h4><ul class="brand-tags">
+      <li>Pepsi</li>
+      <li>Vodafone</li>
+      <li>Mercedes</li>
+      <li>Denizbank</li>
+      <li>İkea</li>
+      <li>Nescafe</li>
+      <li>Akbank</li>
+      <li>Turkcell</li>
+      <li>Colgate</li>
+      <li>Omo</li>
+      <li>Beko</li>
+      <li>Ülker</li>
+    </ul></div>
+    <div class="decor-col"><h4>Fotoğraf Çekimleri</h4><ul class="brand-tags">
+      <li>Arçelik</li>
+      <li>Ülker</li>
+      <li>Turkcell</li>
+      <li>Boyner</li>
+      <li>Tadım</li>
+      <li>YKM</li>
+      <li>Domestos</li>
+      <li>Calve</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="iletisim" class="section-alt">
+  <div class="section-head"><div class="eyebrow">Bize ulaşın</div><h2>İletişim</h2></div>
+  <div class="contact-card">
+    <p class="big" id="contactBig">Bir sonraki eseri birlikte kuralım.</p>
+    <div class="c-row">
+      <a href="mailto:iscan.senay@gmail.com">✉ iscan.senay@gmail.com</a>
+      <a href="tel:+905302021012">☎ +90 530 202 10 12</a>
+    </div>
+    <a class="wa-btn" href="https://wa.me/905302021012" target="_blank">WhatsApp'tan Görüşün</a>
+  </div>
+
+  <div class="contact-locations">
+    <div class="loc-card">
+      <div class="loc-card-head">
+        <div class="loc-tag">Atölye · İstanbul</div>
+        <h3>Ataşehir Atölyesi</h3>
+        <div class="loc-addr">İçerenköy Mah. İspirli Canip Sok. Palmiye Apt. No:26/B<br>34752 Ataşehir / İstanbul</div>
+      </div>
+      <div class="loc-map" id="map-istanbul"></div>
+      <div class="loc-card-foot">
+        <a class="loc-dir-btn" href="https://www.google.com/maps/dir/?api=1&destination=40.971590,29.116698" target="_blank" rel="noopener">➤ Yol tarifi al</a>
+      </div>
+    </div>
+
+    <div class="loc-card">
+      <div class="loc-card-head">
+        <div class="loc-tag">Köy Atölyesi · Tekirdağ</div>
+        <h3>Şalgamlı Atölyesi</h3>
+        <div class="loc-addr">Şalgamlı Mah. 5250. Sokak No:7 Hayrabolu / Tekirdağ<br>Posta Kodu: 59400</div>
+      </div>
+      <div class="loc-map" id="map-salgamli"></div>
+      <div class="loc-card-foot">
+        <a class="loc-dir-btn" href="https://www.google.com/maps/dir/?api=1&destination=41.054490,27.007420" target="_blank" rel="noopener">➤ Yol tarifi al</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="siteFooter">© 2026 bisanat — Bülent &amp; Şenay İşcan Atölyesi · Tüm eserler telif hakkı ile korunmaktadır.</footer>
+
+<!-- ===================== ADMIN PANEL ===================== -->
+<div class="admin-overlay" id="adminPwOverlay">
+  <div class="admin-box admin-pw-box">
+    <h3>Yönetici Girişi</h3>
+    <p class="admin-pw-hint">Şifreyi girin</p>
+    <input type="password" id="adminPwInput" class="admin-input" placeholder="Şifre" autocomplete="off">
+    <div class="admin-pw-error" id="adminPwError">Şifre yanlış.</div>
+    <div class="admin-btn-row">
+      <button type="button" class="admin-btn admin-btn-ghost" id="adminPwCancel">Vazgeç</button>
+      <button type="button" class="admin-btn" id="adminPwSubmit">Giriş</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-overlay" id="adminPanelOverlay">
+  <div class="admin-box admin-panel-box">
+    <div class="admin-panel-head">
+      <h3>İçerik Yönetimi</h3>
+      <button type="button" class="admin-close" id="adminPanelClose" aria-label="Kapat">&times;</button>
+    </div>
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab" id="adminTabTextBtn">Sayfa Metinleri</button>
+      <button type="button" class="admin-tab active" id="adminTabHyperBtn">Sanatta Bir Yaklaşım</button>
+      <button type="button" class="admin-tab" id="adminTabCatBtn">Eserler Kategorileri</button>
+      <button type="button" class="admin-tab" id="adminTabImgBtn">Galeri Görselleri</button>
+    </div>
+
+    <div class="admin-tab-panel" id="adminTabText">
+      <p class="admin-pw-hint">Anasayfa, hakkında, hiperrealizm ve iletişim bölümlerindeki metinleri buradan düzenleyebilirsiniz. Birden fazla paragraf içeren alanlarda paragrafları boş bir satırla ayırın.</p>
+      <div class="admin-fields" id="adminTextFields"></div>
+    </div>
+
+    <div class="admin-tab-panel active" id="adminTabHyper">
+      <p class="admin-pw-hint">6 kartın başlık ve açıklama metinlerini buradan düzenleyebilirsiniz.</p>
+      <div class="admin-fields" id="adminFields"></div>
+    </div>
+
+    <div class="admin-tab-panel" id="adminTabCat">
+      <p class="admin-pw-hint">Kategori adını, giriş başlığını ve açıklama metnini buradan düzenleyebilirsiniz. Birden fazla paragraf yazmak için aralarına boş bir satır bırakın.</p>
+      <div class="admin-fields" id="adminCatFields"></div>
+    </div>
+
+    <div class="admin-tab-panel" id="adminTabImg">
+      <p class="admin-pw-hint">Bir kategori seçin; o kategorinin klasöründeki her görsel için kart/görsel ismini ve altındaki açıklamayı tek tek düzenleyebilirsiniz. Boş bırakılan alanlar otomatik varsayılana döner.</p>
+      <label style="display:block;font-size:11.5px;color:var(--text-muted);margin:4px 0 10px">Kategori</label>
+      <select class="admin-input" id="adminImgCatSelect" style="margin-bottom:14px"></select>
+      <div class="admin-fields" id="adminImgFields"></div>
+    </div>
+
+    <div class="admin-btn-row admin-panel-actions">
+      <button type="button" class="admin-btn admin-btn-ghost" id="adminResetBtn">Bu Sekmeyi Varsayılana Döndür</button>
+      <button type="button" class="admin-btn" id="adminSaveBtn">Kaydet</button>
+    </div>
+
+    <div class="admin-io">
+      <p class="admin-pw-hint" style="margin-bottom:10px">Tüm düzenlemelerinizi (görsel isimleri, açıklamalar, kategori ve sayfa metinleri) tek bir dosya olarak indirip bilgisayarınıza kaydedebilir; dilediğinizde geri yükleyebilirsiniz.</p>
+      <div class="admin-btn-row">
+        <button type="button" class="admin-btn admin-btn-ghost" id="adminExportBtn">↓ Düzenlemeleri İndir (JSON)</button>
+        <button type="button" class="admin-btn admin-btn-ghost" id="adminImportBtn">↑ Dosyadan Yükle</button>
+      </div>
+      <input type="file" id="adminImportInput" accept="application/json,.json" style="display:none">
+      <div class="admin-save-note" id="adminIoNote"></div>
+    </div>
+
+    <div class="admin-save-note" id="adminSaveNote">Kaydedildi.</div>
+  </div>
+</div>
+<!-- =================== /ADMIN PANEL ======================= -->
+
+<script>
+/* ============================================================
+   HERO ARKAPLAN GEÇİŞİ
+   ------------------------------------------------------------
+   hero.webp, hero-1.webp, hero-2.webp, hero-3.webp, hero-4.webp,
+   hero-5.webp arasında yavaş, belirsiz (crossfade) geçiş yapar.
+============================================================ */
+(function(){
+  const layers = document.querySelectorAll('.hero-bg-layer');
+  if(layers.length < 2) return;
+  let idx = 0;
+  setInterval(()=>{
+    layers[idx].classList.remove('active');
+    idx = (idx + 1) % layers.length;
+    layers[idx].classList.add('active');
+  }, 6500);
+})();
+
+/* ============================================================
+   SANATTA BİR YAKLAŞIM — hiperrealizm karşılaştırma kartları
+   ------------------------------------------------------------
+   Her eserin görselleri assets/atolye/1/1.webp, 2.webp, 3.webp...
+   assets/atolye/2/..., ... assets/atolye/6/... şeklinde, eserin
+   HYPER_WORKS içindeki sırasına göre numaralı klasörlerden SIRAYLA
+   denenir (eserler galerisiyle aynı probe mantığı).
+   1 numaralı görsel kapak fotoğrafı olarak kullanılır; DETAYLAR
+   butonu, o çalışmaya ait tüm görselleri tam ekran ileri/geri
+   gezinmeli olarak açar.
+============================================================ */
+const HYPER_WORKS = [
+  { slug:'sanatta-yaklasim-1', title:'Romalı Savaşçı',
+    desc:'Adana Arkeoloji Müzesi için hazırlanan bu heykel, dönemin savaşçı kıyafetini ve duruşunu tarihi kaynaklara sadık kalarak canlandırıyor.' },
+  { slug:'sanatta-yaklasim-2', title:'Mehmetçik Heykeli',
+    desc:'Çanakkale Tarihi Alan Başkanlığı\'nda sergilenen 5,50 metrelik anıtsal eser; cesaret ve fedakârlığı en ince ayrıntısına dek yansıtan görkemiyle büyük ilgi görüyor.' },
+  { slug:'sanatta-yaklasim-3', title:'Portre Çalışmaları',
+    desc:'Her döneme ve şahsa ait portreler, gerçeklik ön planda tutularak birebir çalışılır; yüzün her hattı tek tek işlenerek yaşayan bir ifade kazandırılır.' },
+  { slug:'sanatta-yaklasim-4', title:'Yeniçeri Askeri',
+    desc:'Osmanlı ordusunun gücünü simgeleyen Yeniçeri; dönemin kıyafeti ve teçhizatıyla, kaftanından silahına dek tarihsel doğrulukla canlandırılmıştır.' },
+  { slug:'sanatta-yaklasim-5', title:'Timur Heykeli',
+    desc:'Tarihin en güçlü hükümdarlarından Timur, heybetli duruşu ve etkileyici boyutuyla; sarsılmaz iradesini en gerçekçi ayrıntılarla yansıtan bir eserde yeniden hayat buluyor.' },
+  { slug:'sanatta-yaklasim-6', title:'Zırhlı Süvari Heykeli',
+    desc:'Atının üzerinde güç ve asaleti bir arada taşıyan zırhlı süvari; zırhının her plakası tek tek işlenerek dönemin savaş sanatını olanca ihtişamıyla yansıtıyor.' },
+];
+
+/* Admin panelinden düzenlenen başlık/açıklama metinleri için varsayılan
+   yedek + localStorage'dan geri yükleme. */
+const HYPER_WORKS_DEFAULTS = HYPER_WORKS.map(w => ({ slug:w.slug, title:w.title, desc:w.desc }));
+const BAKED_OVERRIDES = {"pieces":{"ataturk::1.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::2.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::3.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::4.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::5.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::6.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::7.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::8.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::9.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::10.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::11.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"ataturk::12.webp":{"title":"Mustafa Kemal Atatürk","desc":"Ulu Önder Gazi Mustafa Kemal Atatürk'ün aziz hatırasına duyulan saygı ve minnetle, en ince ayrıntısına kadar titizlikle işlenmiş gerçekçi bir çalışma."},"milli-saraylar::Abdülmecid.webp":{"title":"Abdülmecid","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Kütüphaneci.webp":{"title":"Kütüphaneci","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-1.webp":{"title":"Ulema","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-2.webp":{"title":"Ulema","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-3.webp":{"title":"Ulema","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-4.webp":{"title":"Ulema","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"milli-saraylar::Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-5.webp":{"title":"Ulema","desc":"Topkapı Sarayı 3.Ahmet Kütüphanesinde Sergilenmektedir"},"yurtdisi::Çİn Machou Bilim Merkezi-1.webp":{"title":"Machou Bilim Merkezi","desc":"Çİn Machou Bilim Merkezi'nde Sergilenmektedir."},"yurtdisi::Çİn Machou Bilim Merkezi-2.webp":{"title":"Çİn Machou Bilim Merkezi","desc":"Çİn Machou Bilim Merkezi'nde Sergilenmektedir."},"yurtdisi::Çİn Machou Bilim Merkezi-3.webp":{"title":"Çİn Machou Bilim Merkezi","desc":"Çİn Machou Bilim Merkezi'nde Sergilenmektedir."},"yurtdisi::El Jahiz-1.webp":{"title":"El Jahiz","desc":"Yurt dışındaki müze ve bilim merkezleri için hazırlanan, dönemine sadık kalınarak titizlikle üretilmiş özel bir çalışma."},"yurtdisi::El Jahiz-2.webp":{"title":"El Jahiz","desc":"El Jahiz'de Sergilenmektedir."},"yurtdisi::Katar.webp":{"title":"Katar","desc":"Katar'da Sergilenmektedir."},"yurtdisi::Suudi Arabistan-1.webp":{"title":"Suudi Arabistan","desc":"Suudi Arabistan'da Sergilenmektedir."},"yurtdisi::Suudi Arabistan-2.webp":{"title":"Suudi Arabistan","desc":"Suudi Arabistan'da Sergilenmektedir."},"yurtdisi::Ürdün-1.webp":{"title":"Ürdün","desc":"Ürdün'de Sergilenmektedir."},"yurtdisi::Ürdün-2.webp":{"title":"Ürdün","desc":"Ürdün'de Sergilenmektedir."},"yurtdisi::Ürdün-3.webp":{"title":"Ürdün","desc":"Ürdün'de Sergilenmektedir."},"arkeoloji::1.webp":{"title":"1","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::2.webp":{"title":"2","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::3.webp":{"title":"3","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::4.webp":{"title":"4","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::5.webp":{"title":"5","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::6.webp":{"title":"6","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::7.webp":{"title":"7","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::8.webp":{"title":"8","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::9.webp":{"title":"9","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::10.webp":{"title":"10","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::11.webp":{"title":"11","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::12.webp":{"title":"12","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::13.webp":{"title":"13","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::14.webp":{"title":"14","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::15.webp":{"title":"15","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::16.webp":{"title":"16","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::17.webp":{"title":"17","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::18.webp":{"title":"18","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::19.webp":{"title":"19","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::20.webp":{"title":"20","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::21.webp":{"title":"21","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::22.webp":{"title":"22","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"arkeoloji::23.webp":{"title":"23","desc":"Anadolu'nun köklü geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan, arkeoloji müzeleri için hazırlanmış gerçekçi bir canlandırma."},"etnografya::Adana Arkeoloji Müzesi.webp":{"title":"Adana Arkeoloji Müzesi","desc":"Adana Arkeoloji Müzesi'nde Sergilenmektedir."},"etnografya::Adana Etnografya Müzesi - Dokumacılar.webp":{"title":"Dokumacılar","desc":"Adana Etnografya Müzesi'nde Sergilenmektedir."},"etnografya::Adana Etnografya Müzesi - Kadın.webp":{"title":"Kadın","desc":"Adana Etnografya Müzesi'nde Sergilenmektedir."},"etnografya::Adana Etnografya Müzesi - Sergilenen Yöresel Kadın.webp":{"title":"Yöresel Kadın","desc":"Adana Etnografya Müzesi'nde Sergilenmektedir."},"etnografya::Adana Etnografya Müzesi-Yüz Eğiren Kadın.webp":{"title":"Yüz Eğiren Kadın","desc":"Adana Etnografya Müzesi'nde Sergilenmektedir."},"etnografya::Atatürk Evi-1 İzmit.webp":{"title":"Atatürk Evi","desc":"İzmit Atatürk Evi'nde Sergilenmektedir."},"etnografya::Atatürk Evi-2 İzmit.webp":{"title":"Atatürk Evi","desc":"İzmit Atatürk Evi'nde Sergilenmektedir."},"etnografya::Atatürk Evi-3 İzmit.webp":{"title":"Atatürk Evi","desc":"İzmit Atatürk Evi'nde Sergilenmektedir."},"etnografya::Atatürk Evi-4 İzmit.webp":{"title":"Atatürk Evi","desc":"İzmit Atatürk Evi'nde Sergilenmektedir."},"etnografya::Bartın Arkeoloji Müzesi.webp":{"title":"Bartın Arkeoloji Müzesi","desc":"Bartın Arkeoloji Müzesi'nde Sergilenmektedir."},"etnografya::Cizre Müzesi.webp":{"title":"Cizre Müzesi","desc":"Cizre Müzesi'nde Sergilenmektedir."},"etnografya::Edirne.webp":{"title":"Edirne","desc":"Edirne Müzesi'nde Sergilenmektedir."},"etnografya::Erzurum Arkeoloji Müzesi Etnografya Bölümü.webp":{"title":"Erzurum Arkeoloji Müzesi Etnografya Bölümü","desc":"Erzurum Arkeoloji Müzesi Etnografya Bölümünde Sergilenmketedir."},"etnografya::Eti Göç Müzesi - Göç Edenler.webp":{"title":"Göç Edenler","desc":"Eskişehir Eti Göç Müzesi'nde Sergilenmektedir."},"etnografya::Eti Göç Müzesi Eskişehir.webp":{"title":"Eti Göç Müzesi Eskişehir","desc":"Eskişehir Eti Göç Müzesi'nde Sergilenmektedir."},"etnografya::Eti Göç Müzesi.webp":{"title":"Eti Göç Müzesi","desc":"Eskişehir Eti Göç Müzesi'nde Sergilenmektedir."},"etnografya::Eti Göz Müzesi Göç Edenler.webp":{"title":"Eti Göz Müzesi Göç Edenler","desc":"Eskişehir Eti Göç Müzesi'nde Sergilenmektedir."},"etnografya::Gaziantep Hamam Müzesi.webp":{"title":"Gaziantep Hamam Müzesi","desc":"Gaziantep Hamam Müzesi'nde Sergilenmektedir."},"etnografya::İslam Eserleri Müzesi -  Hattat.webp":{"title":"Hattat","desc":"İslam Eserleri Müzesi'nde Sergilenmektedir."},"etnografya::İslam Eserleri Müzesi Etnografya Bölümü.webp":{"title":"İslam Eserleri Müzesi Etnografya Bölümü","desc":"İslam Eserleri Müzesi Etnografya Bölümü'nde Sergilenmektedir."},"etnografya::İslam Eserleri Müzesi Sultanahmet.webp":{"title":"İslam Eserleri Müzesi Sultanahmet","desc":"İslam Eserleri Müzesi Sultanahmet'te Sergilenmektedir."},"etnografya::İslam Eserleri Müzesi-1.webp":{"title":"İslam Eserleri Müzesi","desc":"İslam Eserleri Müzesi Sultanahmet'te Sergilenmektedir."},"etnografya::İslam Eserleri Müzesi-2.webp":{"title":"İslam Eserleri Müzesi","desc":"İslam Eserleri Müzesi Sultanahmet'te Sergilenmektedir."},"etnografya::İznik Müzesi.webp":{"title":"İznik Müzesi","desc":"İznik Müzesi'nde Sergilenmektedir."},"etnografya::Kırşehir Müzesi.webp":{"title":"Kırşehir Müzesi","desc":"Kırşehir Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi Sergi.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-1.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-2.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-3.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-4.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-5.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Niğde Müzesi-6.webp":{"title":"Niğde Müzesi","desc":"Niğde Müzesi'nde Sergilenmektedir."},"etnografya::Türkmen Kızı.webp":{"title":"Türkmen Kızı","desc":"Niğde Müzesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-1.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-2.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-3.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-4.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-5.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-6.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-7.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-8.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-9.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-10.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-11.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-12.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-13.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-14.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-15.webp":{"title":"Hastane; Doktor, Hemşire, Yaralı ve Hastalar","desc":"Çanakkale Tarihi Alan Başkanlığı Alçıtepe Hilal-İ Ahmer Yaralı Hastanesi'nde Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-1.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-2.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-3.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-4.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-5.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Kilitbahir Topçu Tabyaları-6.webp":{"title":"Kilitbahir Topçu Tabyaları","desc":"Çanakkale Tarihi Alan Başkanlığı Kilitbahir Topçu Tabyaları'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 1.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 2.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 3.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 4.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 5.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 6.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 7.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 8.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 9.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"tarihi-alan::Mehmetçik Heykeli 5,50m 10.webp":{"title":"Mehmetçik Heykeli 5,50 Metre","desc":"Çanakkale Tarihi Alan Başkanlığı'nda Sergilenmektedir."},"deniz-muzesi::Fatih Sultan Mehmet-1.webp":{"title":"Fatih Sultan Mehmet","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Fatih Sultan Mehmet-2.webp":{"title":"Fatih Sultan Mehmet","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Kartal İstimbotu.webp":{"title":"Kartal İstimbotu","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Piri Reis.webp":{"title":"Piri Reis","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Piri Reis-2.webp":{"title":"Piri Reis","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Sadrazam.webp":{"title":"Sadrazam","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"deniz-muzesi::Uluç Ali Reis Denizaltısı-Gemi Komutanı.webp":{"title":"Uluç Ali Reis Denizaltısı Gemi Komutanı","desc":"Çanakkale Deniz Müzesinde Sergilenmektedir."},"tipki-benzer::Adile Naşit, Sinema Müzesi.webp":{"title":"Adile Naşit","desc":"Sinema Müzesinde Sergilenmektedir."},"tipki-benzer::Gulyabani, Sinema Müzesi.webp":{"title":"Gulyabani","desc":"Sinema Müzesinde Sergilenmektedir."},"tipki-benzer::Kazım Karabekir Vakfı.webp":{"title":"Kazım Karabekir","desc":"Kazım Karabekir Vakfı'nda Sergilenmektedir."},"tipki-benzer::Kemal Sunal, Sinema Müzesi.webp":{"title":"Kemal Sunal","desc":"Sinema Müzesinde Sergilenmektedir."},"tipki-benzer::Nejat Uygur, Cibali Karakolu Sergisi.webp":{"title":"Nejat Uygur","desc":"Cibali Karakolu Sergisi'nde Sergilenmketedir."},"tipki-benzer::Sinema Müzesi, Yumurcak.webp":{"title":"Yumurcak","desc":"Sinema Müzesinde Sergilenmektedir."},"tipki-benzer::Tarık Akan, Türvak.webp":{"title":"Tarık Akan","desc":"Türvak'ta Sergilenmektedir."},"ozel-muzeler::1.webp":{"title":"1","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::2.webp":{"title":"2","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::3.webp":{"title":"3","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::4.webp":{"title":"4","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::5.webp":{"title":"5","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::6.webp":{"title":"6","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::7.webp":{"title":"7","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::8.webp":{"title":"8","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"ozel-muzeler::9.webp":{"title":"9","desc":"Kurumların ve koleksiyonların hikâyesini yaşatmak üzere, tarihî gerçekliğe bağlı kalınarak hazırlanmış özel bir çalışma."},"portre::1.webp":{"title":"1","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::2.webp":{"title":"2","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::3.webp":{"title":"3","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::4.webp":{"title":"4","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::5.webp":{"title":"5","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::6.webp":{"title":"6","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::7.webp":{"title":"7","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::8.webp":{"title":"8","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::9.webp":{"title":"9","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::10.webp":{"title":"10","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::11.webp":{"title":"11","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::12.webp":{"title":"12","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::13.webp":{"title":"13","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::14.webp":{"title":"14","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"portre::15.webp":{"title":"15","desc":"Gerçekçi modelleme ve ince işçiliğin bir araya geldiği, yüz hatlarının ve ifadenin en ince ayrıntısına dek işlendiği özgün bir portre çalışması."},"tarih-oncesi::1.webp":{"title":"1","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::2.webp":{"title":"2","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::3.webp":{"title":"3","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::4.webp":{"title":"4","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::5.webp":{"title":"5","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::6.webp":{"title":"6","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::7.webp":{"title":"7","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::8.webp":{"title":"8","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::9.webp":{"title":"9","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::10.webp":{"title":"10","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::11.webp":{"title":"11","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"tarih-oncesi::12.webp":{"title":"12","desc":"İnsanlığın ilk yaşam izlerini bilimsel veriler ışığında canlandıran, tarih öncesi çağlara ait gerçekçi bir sahne."},"film-tv::1.webp":{"title":"1","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::2.webp":{"title":"2","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::3.webp":{"title":"3","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::4.webp":{"title":"4","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::5.webp":{"title":"5","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::6.webp":{"title":"6","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::7.webp":{"title":"7","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::8.webp":{"title":"8","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::9.webp":{"title":"9","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::10.webp":{"title":"10","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."},"film-tv::11.webp":{"title":"11","desc":"Film, televizyon ve reklam yapımları için hazırlanan, sahnenin ruhuna uygun dekor ve aksesuar çalışmalarından bir örnek."}},"categories":{"ataturk":{"name":"Mustafa Kemal Atatürk","introTitle":"Mustafa Kemal Atatürk","introParagraphs":"Mustafa Kemal Atatürk; üstün dehası, sarsılmaz liderliği ve eşsiz ileri görüşlülüğüyle tarihe yön vermiş büyük bir devlet adamıdır. Dahi bir stratejist ve benzersiz bir komutan olarak, bağımsızlık mücadelesini zafere taşıyarak milletine umut olmuş, Türk tarihinin en büyük kahramanlarından biri olarak adını ölümsüzleştirmiştir. Cesareti, kararlılığı ve çağdaş uygarlık hedefiyle yalnızca bir ulusu özgürlüğe kavuşturmakla kalmamış, gelecek nesillere ilham veren kalıcı bir miras bırakmıştır. Atatürk, fikirleri ve eserleriyle bugün de saygı, minnet ve hayranlıkla anılan büyük bir liderdir.\n\nDünya tarihinin en büyük devrimcilerinden Gazi Mustafa Kemal Atatürk'e duyduğumuz sonsuz sevgi, saygı ve minnetle onu yaşatmaya çalışıyoruz. Atatürk üzerine çalışmak bizim için en büyük onur, ilham ve sorumluluktur; onun aziz hatırasını gelecek nesillere aktarmak ve unutturmamak en büyük idealimiz ve varlık sebebimizdir."},"milli-saraylar":{"name":"Milli Saraylar","introTitle":"Milli Saraylar","introParagraphs":"Geçmişin ihtişamı, bugünün hafızası. Müze saraylar, bir zamanlar hükümdarların ve devlet yöneticilerinin yaşamına tanıklık etmiş, bugün ise tarih ve kültürü yaşatan eşsiz yapılardır. Görkemli mimarileri ve zengin koleksiyonlarıyla ziyaretçilerini geçmişin ihtişamına götürür; her salonu, tarihin izlerini ve kültürel mirası gelecek nesillere aktaran yaşayan birer hafızadır.\n\nMüze saraylardaki çalışmalarımızda, saray yaşamını ve dönemin insanlarını tarihsel doğrulukla yansıtan gerçekçi canlandırmalar hazırlıyoruz. Orijinal mekânlar ve özgün tefrişlerle oluşturulan bu sahneler, ziyaretçilere geçmişi sanki yeniden yaşıyormuş hissi veren etkileyici bir deneyim sunar.\n\nBu çalışmalarımızın en değerli örneklerinden biri Topkapı Sarayı'ndadır. 15. yüzyıldan 19. yüzyıla kadar Osmanlı İmparatorluğu'nun yönetim merkezi olan ve bugün dünyanın en saygın müze-sarayları arasında yer alan bu eşsiz mekânda sergilenen heykellerimiz, tarihî mekânın ruhuna ve dönemin gerçekliğine uygun olarak bilimsel araştırmalar ve sanatsal titizlikle hazırlanmıştır. Bu köklü tarihî atmosferin bir parçası olmak, eserlerimizin en büyük gurur kaynaklarından biridir."},"yurtdisi":{"name":"Yurtdışı Çalışmaları","introTitle":"Yurtdışı Çalışmalarımız","introParagraphs":"Yurt dışındaki müzeler ve bilim merkezleri için, tarihe yön veren bilim insanlarını ve onların buluşlarını konu alan özel çalışmalar hazırlıyoruz. Bu isimleri en ince ayrıntısına kadar araştırarak gerçekçi heykellerle canlandırırken, icatlarını dönemine özgü dekorlar ve birebir ölçekte yeniden üretilmiş düzeneklerle ziyaretçilerin karşısına çıkarıyoruz.\n\nSergilenen her mekanizmayı, ilk tasarımına sadık kalarak — modern teknolojiye başvurmadan, dönemin malzeme ve yöntemleriyle — yeniden inşa ediyoruz. Amacımız yalnızca bir buluşu göstermek değil, o buluşun ardındaki emeği, dehayı ve dönemin ruhunu olduğu gibi yaşatmaktır. Bu anlayışla ürettiğimiz eserler, bugün dünyanın farklı ülkelerindeki müze ve bilim merkezlerinde sergilenmeye devam ediyor."},"arkeoloji":{"name":"Arkeoloji Müzeleri","introTitle":"Arkeoloji Müzeleri","introParagraphs":"Arkeoloji müzeleri, geçmiş uygarlıkların izlerini günümüze taşıyan eşsiz kültür hazineleridir. Binlerce yıllık eserleri koruyarak ziyaretçilere tarihin derinliklerinde unutulmaz bir yolculuk sunar. Her eser, insanlığın ortak mirasını anlatan sessiz bir tanık; her sergi ise geçmiş ile gelecek arasında kurulan değerli bir köprüdür.\n\nAnadolu medeniyetleri, insanlık tarihine yön veren sayısız arkeolojik mirası günümüze ulaştırmıştır. Bu eşsiz eserler, dünya kültür mirasının en değerli hazineleri arasında yer alır. Arkeoloji müzelerindeki çalışmalarımızda, Anadolu'nun zengin kültürel geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan gerçekçi sahneler hazırlıyoruz. Amacımız, yazı öncesi ve yazı sonrası dönemleri ziyaretçilere etkileyici ve öğretici bir görsel deneyimle sunmaktır."},"etnografya":{"name":"Etnografya Müzeleri","introTitle":"Etnografya Müzeleri","introParagraphs":"Bir toplumun ruhu, elden ele, nesilden nesile. Etnografya müzeleri, toplumların yaşam biçimini, geleneklerini, el sanatlarını ve kültürel değerlerini geleceğe taşıyan kültür merkezleridir. Geçmişin günlük yaşamını, yaşam alanlarını ve üretim kültürünü özgün eserlerle ziyaretçilere sunar; her eser, bir toplumun kimliğini ve zengin mirasını anlatan değerli bir tanıktır.\n\nEtnografya müzelerindeki çalışmalarımızda, bu toprakların zengin kültürünü, geleneklerini, el sanatlarını ve özgün yaşam biçimini gerçekçi sahnelerle yaşatmayı amaçlıyoruz. Her çalışmamız, kültürel mirasımızın eşsiz zenginliğine duyduğumuz saygının ve onu gelecek nesillere aktarma sorumluluğumuzun bir yansımasıdır."},"tarihi-alan":{"name":"Çanakkale Savaşları Tarihi Alan","introTitle":"Çanakkale Savaşları Tarihi Alan Çalışmaları","introParagraphs":"Çanakkale Tarihi Alanı, milletimizin bağımsızlık uğruna verdiği destansı mücadelenin, fedakârlığın ve kahramanlığın en güçlü simgelerinden biridir. Aynı zamanda savaşın acılarını ve barışın kıymetini gelecek nesillere anlatan evrensel bir hatıra mekânıdır.\n\nBu anlamlı tarihî alandaki çalışmalarımızda, Çanakkale kahramanlarını ve savaşın unutulmaz anlarını tarihsel doğruluk ve sanatsal titizlikle heykellerimizde yaşatıyoruz. Her eserimiz, aziz kahramanlarımızın hatırasını ölümsüzleştirmek, ziyaretçilere o ruhu hissettirmek ve Çanakkale destanını gelecek nesillere aktarmak amacıyla hazırlanmıştır."},"deniz-muzesi":{"name":"Çanakkale Deniz Müzesi","introTitle":"Çanakkale Deniz Müzesi","introParagraphs":"Çimenlik Kalesi'nde, denizlerin destanını yaşatıyoruz. Çanakkale Deniz Müzesi, Türk denizcilik tarihinin en önemli miraslarını yaşatan, Çimenlik Kalesi'nin eşsiz tarihî atmosferinde ziyaretçilerini geçmişle buluşturan seçkin bir müzedir.\n\nÇanakkale ruhunu, deniz savaşlarının kahramanlığını ve bu köklü mirası etkileyici biçimde yaşatan bu müzede yer almak bizim için büyük bir onur ve gurur kaynağıdır. Buradaki heykellerimiz, tarihî gerçekliğe bağlı kalınarak hazırlanmış ve ziyaretçilerin o dönemin ruhunu hissedebilmesi amacıyla tasarlanmıştır."},"tipki-benzer":{"name":"Tıpkı Benzer Çalışmalar","introTitle":"Tıpkı Benzer Çalışmalar","introParagraphs":"Bir bakışta tanınan, bir dokunuşta hayat bulan yüzler. Benzetme heykellerimiz, kişilerin fotoğrafları, portreleri ve mevcut görsel kaynakları esas alınarak hazırlanır; her eser, karakterin yüz hatlarını, ifadesini ve kendine özgü duruşunu en doğru şekilde yansıtacak titizlikte şekillendirilir.\n\nAmacımız, yalnızca fiziksel benzerliği değil; kişinin karakterini ve ruhunu da sanatsal bir yorumla yaşatmaktır."},"ozel-muzeler":{"name":"Özel Müzeler","introTitle":"Özel Müzeler","introParagraphs":"Bir kurumun hafızasını, bir mirasın hikâyesini heykelleştiriyoruz. Özel müzeler; kişi, vakıf ya da kurumlar tarafından kurulan, sanat, tarih, kültür ve koleksiyon mirasını koruyup ziyaretçilerle buluşturan seçkin mekânlardır.\n\nBu müzelerdeki çalışmalarımızda, tarihî kişilikleri, kültürel değerleri ve önemli yaşam sahnelerini gerçekçi heykeller ve canlandırmalarla yeniden kuruyor, ziyaretçilere etkileyici ve unutulmaz bir deneyim sunuyoruz."},"portre":{"name":"Portreler","introTitle":"Heykel Yüzleri","introParagraphs":"Her çizgide bir karakter, her ifadede bir hikâye. Bu bölümde, heykellerimizin yüz ifadelerini ve karakter detaylarını yakından inceleyebilirsiniz. Her portre; gerçekçi modelleme, sanatsal ustalık ve ince işçiliğin bir araya geldiği özgün bir eserdir."},"tarih-oncesi":{"name":"Tarih Öncesi İnsanlar","introTitle":"Tarih Öncesi İnsanlar","introParagraphs":"Tarih öncesi çağlara ait çalışmalarımızda, insanlığın ilk yaşam izlerini bilimsel veriler ışığında gerçekçi sahnelerle canlandırıyoruz. Alanında uzman akademisyenler ve bilim insanlarıyla hazırlanan bu eserler, geçmişimizi tarihsel doğrulukla ziyaretçilere sunmaktadır. Her sahne, insanlığın köklü geçmişini keşfetmeye davet eden etkileyici bir zaman yolculuğudur."},"film-tv":{"name":"Film, TV, Reklam Setleri","introTitle":"Film, TV, Reklam Setleri Dekor Çalışmaları","introParagraphs":"Kameranın arkasında, sanatın önünde. Uzun yıllar boyunca film, televizyon ve reklam sektöründe pek çok değerli yapımda görev aldık; birlikte çalışma onurunu yaşadığımız sanatçılar ve film ekipleri, mesleki yolculuğumuzun en değerli parçası oldu.\n\nBu bölümde, yer aldığımız yapımlardan seçilmiş dekor, aksesuar ve çalışmalarımızdan örnekleri görebilirsiniz."}},"texts":{"heroEyebrow":"bisanat atölyesi","heroTitle":"Gerçeğin ötesinde<br>bir <em>gerçeklik.</em>","heroSub":"<span class=\"brand-hl\">bisanat</span> atölyesinde her eser, gerçeğin sınırlarını zorlayan bir tutkuyla doğar. Bülent İşcan'ın hiperrealist heykelleri, Şenay İşcan'ın usta sanat yönetmenliğiyle buluşunca tarih artık anlatılmaz — karşınızda nefes alır.","stat1Num":"1000+","stat1Label":"Üretilen hiperrealist eser","stat2Num":"90+","stat2Label":"Yurt içi müze projesi","stat3Num":"10","stat3Label":"Ülkede sergilenen eser","stat4Num":"20+","stat4Label":"Yıl sinema / TV deneyimi","bulentBio":"1972 Tekirdağ doğumlu Bülent İşcan, Marmara Üniversitesi Güzel Sanatlar Fakültesi Resim Bölümü'nden mezun oldu. Yıllarca sinema, TV ve reklam sektörüne dekor, aksesuar ve maket üreten sanatçı, tarihi film ve dizilerde gerçeğe en yakın görünümü sahneye taşıma tutkusuyla 26 yaşında hiperrealist heykel sanatına yöneldi. Her eserine aylarca süren bir emekle can katan sanatçı, kırışıklıktan damar izine, bakışındaki ışıktan ten dokusuna kadar en ince ayrıntıyı tek tek işleyerek heykellerine adeta nefes alan bir gerçeklik kazandıran Bülent İşcan, bugün 70'i aşkın müzede, binin üzerinde eseriyle sergileniyor — Topkapı ve Dolmabahçe Sarayları'ndan Çanakkale Tarihi Alanı'na, yurt dışında Çin'den Azerbaycan'a kadar birçok ülkede eserleri yer alıyor.\n\nEn çok duygulandığı çalışmalar arasında İstanbul Sinema Müzesi için ürettiği Adile Naşit ve Kemal Sunal heykelleri yer alıyor; yüzlerce fotoğraf ve arşiv taraması sonunda ortaya çıkan bu eserler, bir neslin hafızasını yeniden canlandırdı. İstanbul'daki otuz yıllık atölye hayatının ardından eşi Şenay ile birlikte memleketi Hayrabolu'nun Şalgamlı köyüne yerleşerek üretimini köy sakinleriyle birlikte sürdürmeye başladı; bugün köyde 100'e yakın heykel ortak emekle hayat buluyor.\n\nSanatçının en dikkat çeken son eseri, Çanakkale Savaşları Gelibolu Tarihi Alan Başkanlığı için tasarladığı 4,5 metre yüksekliğindeki Mehmetçik Heykeli oldu — dönemin fedakârlığını ve cesaretini tüm gerçekliğiyle yansıtan bu dev eser, sanatçıya 2024 yılında Tekirdağ Kültür Elçisi unvanını kazandırdı.","senayBio":"Atölyenin sanat yönetmeni ve koordinatörü olan Şenay İşcan, her projenin başında dosyaları inceleyerek iş planını ve görev dağılımını belirliyor, anlaşmaları yürütüyor. Dönemin ruhuna uygun çalışmalar üretebilmek için tarihi belge ve görselleri araştırıyor, eskizleri hazırlıyor. Kostüm tasarımından — kumaş seçimi, nakış, başlık ve aksesuar — heykel üretiminin kalıp, döküm, saç ve yüz ekimi aşamalarına kadar atölyenin sanatsal sürecinin tamamını koordine ediyor; birlikte çalıştıkları ustalar ve zanaatkârlarla eş güdümü sağlıyor.\n\nBunun yanında 15 yıldır Türkiye'nin farklı şehirlerini — Tekirdağ, Gaziantep, Konya, Hatay, Denizli, Niğde, Mardin ve Şanlıurfa başta olmak üzere — dolaşarak cepken, üç etek, çarık, bindallı, tel kırma ve heybe gibi tarihi eşyaları topluyor. Depoladığı bu eserleri talep halinde müzelere ücretsiz teslim ediyor; bugüne dek İslam Eserleri Müzesi, Afyonkarahisar Arkeoloji Müzesi, Adana Etnografya Müzesi ve Necmi İğe Evi Etnografya Müzesi gibi kurumlarla çalıştı. Amaç, geçmişten gelen kültürel değerleri gelecek nesillere taşımak.","aboutPull":"\"Bülent elindeki malzemeye can verir, Şenay o canı dünyaya taşır.\"","hyperCardTitle":"Bülent İşcan İle Gerçeğin Ötesinde Bir Gerçeklik","hyperCardBody":"Aşırı gerçekçilik, bir yüzü, bir anı ya da bir karakteri fotoğrafik netlikte — hatta çoğu zaman çıplak gözün fark edemeyeceği bir ayrıntı düzeyinde — yeniden üretme sanatıdır. Cilt dokusu, damar izleri, tek tek yerleştirilen kıllar, gözbebeğinin derinliğindeki ışık kırılması... Hiçbir ayrıntı tesadüfe bırakılmaz; her biri, izleyeni \"gerçek mi, değil mi\" sorusuyla baş başa bırakmak için özenle hesaplanır.\n\nBülent İşcan bu sanata 26 yaşında başladı ve o günden bu yana doğal malzemelerden en son teknolojik materyallere kadar geniş bir yelpazede çalışıyor. Balmumu ve silikon gibi malzemeler, yılların ustalığıyla yavaş yavaş bir yüze dönüşür; her eser, referans fotoğraflarla defalarca kıyaslanarak, saatlerce süren elle uygulanan ayrıntı işçiliğiyle can bulur.\n\nSonuç, bir heykel değil; donmuş bir andır. Ziyaretçi karşısındaki yüze baktığında kendine bir soru sorar: <em class=\"gold-text\">nefes alıyor mu?</em> Aşırı gerçekçiliğin gücü de tam olarak bu şüphede saklıdır.","contactBig":"Bir sonraki eseri birlikte kuralım.","siteFooter":"© 2026 bisanat — Bülent & Şenay İşcan Atölyesi · Tüm eserler telif hakkı ile korunmaktadır."},"hyper":{"sanatta-yaklasim-1":{"title":"Romalı Savaşçı","desc":"Adana Arkeoloji Müzesi için hazırlanan bu heykel, dönemin savaşçı kıyafetini ve duruşunu tarihi kaynaklara sadık kalarak canlandırıyor."},"sanatta-yaklasim-2":{"title":"Mehmetçik Heykeli","desc":"Çanakkale Tarihi Alan Başkanlığı'nda sergilenen 5,50 metrelik anıtsal eser; cesaret ve fedakârlığı en ince ayrıntısına dek yansıtan görkemiyle büyük ilgi görüyor."},"sanatta-yaklasim-3":{"title":"Portre Çalışmaları","desc":"Her döneme ve şahsa ait portreler, gerçeklik ön planda tutularak birebir çalışılır; yüzün her hattı tek tek işlenerek yaşayan bir ifade kazandırılır."},"sanatta-yaklasim-4":{"title":"Yeniçeri Askeri","desc":"Osmanlı ordusunun gücünü simgeleyen Yeniçeri; dönemin kıyafeti ve teçhizatıyla, kaftanından silahına dek tarihsel doğrulukla canlandırılmıştır."},"sanatta-yaklasim-5":{"title":"Timur Heykeli","desc":"Tarihin en güçlü hükümdarlarından Timur, heybetli duruşu ve etkileyici boyutuyla; sarsılmaz iradesini en gerçekçi ayrıntılarla yansıtan bir eserde yeniden hayat buluyor."},"sanatta-yaklasim-6":{"title":"Zırhlı Süvari Heykeli","desc":"Atının üzerinde güç ve asaleti bir arada taşıyan zırhlı süvari; zırhının her plakası tek tek işlenerek dönemin savaş sanatını olanca ihtişamıyla yansıtıyor."}}};
+
+/* Kaydedilmiş varsayılan içerik (yönetim panelinden indirilen JSON buraya gömülüdür).
+   localStorage'da kullanıcı düzenlemesi varsa o öncelik alır; yoksa bu gömülü
+   değerler kullanılır. Böylece isim/açıklamalar herkeste kalıcı görünür. */
+function bakedSection(name){ return (BAKED_OVERRIDES && BAKED_OVERRIDES[name]) ? BAKED_OVERRIDES[name] : {}; }
+function mergedOverrides(storageKey, section){
+  const baseObj = bakedSection(section);
+  let userObj = {};
+  try{ const raw = localStorage.getItem(storageKey); if(raw) userObj = JSON.parse(raw) || {}; }catch(err){ userObj = {}; }
+  /* Anahtar bazında derin birleştir: kullanıcının boş bıraktığı alan (ör. desc)
+     gömülü değeri EZMESİN; sadece dolu yazdığı alanlar gömülünün üstüne geçsin. */
+  const out = {};
+  const keys = new Set([...Object.keys(baseObj), ...Object.keys(userObj)]);
+  keys.forEach(k=>{
+    const b = baseObj[k], u = userObj[k];
+    if(b && typeof b === 'object' && u && typeof u === 'object'){
+      const merged = Object.assign({}, b);
+      Object.keys(u).forEach(f=>{
+        const val = u[f];
+        if(typeof val === 'string' ? val.trim() !== '' : (val !== undefined && val !== null)){
+          merged[f] = val; /* kullanıcı dolu yazmışsa üste geçir */
+        }
+      });
+      out[k] = merged;
+    } else {
+      out[k] = (u !== undefined) ? u : b;
+    }
+  });
+  return out;
+}
+
+const HYPER_OVERRIDES_KEY = 'bisanat_hyper_overrides';
+function loadHyperOverrides(){
+  try{
+    const overrides = mergedOverrides(HYPER_OVERRIDES_KEY, 'hyper');
+    HYPER_WORKS.forEach(w=>{
+      const o = overrides[w.slug];
+      if(o){
+        if(typeof o.title === 'string' && o.title.trim()) w.title = o.title;
+        if(typeof o.desc  === 'string' && o.desc.trim())  w.desc  = o.desc;
+      }
+    });
+  }catch(err){ /* bozuk kayıt varsa yoksay */ }
+}
+loadHyperOverrides();
+
+function hyperImgPath(slug, file){ return `assets/eserler/${slug}/${file}`; }
+
+async function loadHyperImages(slug){
+  const files = [];
+  let misses = 0;
+  for(let i = 1; i <= 60; i++){
+    let found = null;
+    for(const file of candidateFiles(i)){
+      if(await probeImage(hyperImgPath(slug, file))){ found = file; break; }
+    }
+    if(found){ files.push(found); misses = 0; }
+    else { misses++; if(misses > PROBE_GAP) break; }
+  }
+  return files;
+}
+
+async function renderHyperGrid(){
+  const grid = document.getElementById('hyperGrid');
+  grid.innerHTML = '';
+  HYPER_WORKS.forEach(work=>{
+    const card = document.createElement('div');
+    card.className = 'compare';
+    card.innerHTML = `<div class="cover"><span class="cover-fallback">${work.title}<br>3:2 Görsel</span></div>
+      <div class="meta">
+        <div class="eyebrow-sm">Sanatta Bir Yaklaşım Atölyesi</div>
+        <h4>${work.title}</h4>
+        <p class="desc">${work.desc}</p>
+        <button class="detay-btn" type="button">DETAYLAR</button>
+      </div>`;
+    card.querySelector('.detay-btn').addEventListener('click', ()=> openHyperLightbox(work.slug));
+    grid.appendChild(card);
+  });
+
+  HYPER_WORKS.forEach(async work=>{
+    const files = await loadHyperImages(work.slug);
+    hyperImagesCache[work.slug] = files;
+    const card = grid.children[HYPER_WORKS.indexOf(work)];
+    const cover = card.querySelector('.cover');
+    if(files.length){
+      const img = document.createElement('img');
+      img.alt = work.title;
+      img.onerror = ()=> img.remove();
+      img.src = hyperImgPath(work.slug, files[0]);
+      cover.appendChild(img);
+    }
+  });
+}
+
+const hyperImagesCache = {};
+const hyperLightbox   = document.getElementById('hyperLightbox');
+const hyperLbImg       = document.getElementById('hyperLbImg');
+const hyperLbTitle     = document.getElementById('hyperLbTitle');
+const hyperLbDesc      = document.getElementById('hyperLbDesc');
+const hyperLbCounter   = document.getElementById('hyperLbCounter');
+let hyperLbSlug = null, hyperLbIndex = 0;
+
+async function openHyperLightbox(slug){
+  hyperLbSlug = slug; hyperLbIndex = 0;
+  if(!hyperImagesCache[slug]) hyperImagesCache[slug] = await loadHyperImages(slug);
+  updateHyperLightbox();
+  hyperLightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeHyperLightbox(){
+  hyperLightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function updateHyperLightbox(){
+  const work = HYPER_WORKS.find(w=>w.slug===hyperLbSlug);
+  const files = hyperImagesCache[hyperLbSlug] || [];
+  if(!work || !files.length) return;
+  hyperLbImg.src = hyperImgPath(hyperLbSlug, files[hyperLbIndex]);
+  hyperLbImg.alt = work.title;
+  hyperLbTitle.textContent = work.title;
+  hyperLbDesc.textContent  = work.desc;
+  hyperLbCounter.textContent = `${hyperLbIndex+1} / ${files.length}`;
+}
+function hyperLbStep(dir){
+  const files = hyperImagesCache[hyperLbSlug] || [];
+  if(!files.length) return;
+  hyperLbIndex = (hyperLbIndex + dir + files.length) % files.length;
+  updateHyperLightbox();
+}
+document.getElementById('hyperLbClose').addEventListener('click', closeHyperLightbox);
+document.getElementById('hyperLbPrev').addEventListener('click', ()=>hyperLbStep(-1));
+document.getElementById('hyperLbNext').addEventListener('click', ()=>hyperLbStep(1));
+hyperLightbox.addEventListener('click', e=>{ if(e.target === hyperLightbox) closeHyperLightbox(); });
+document.addEventListener('keydown', e=>{
+  if(!hyperLightbox.classList.contains('open')) return;
+  if(e.key === 'Escape') closeHyperLightbox();
+  if(e.key === 'ArrowLeft') hyperLbStep(-1);
+  if(e.key === 'ArrowRight') hyperLbStep(1);
+});
+let hyperTouchX = null;
+hyperLightbox.addEventListener('touchstart', e=> hyperTouchX = e.touches[0].clientX);
+hyperLightbox.addEventListener('touchend', e=>{
+  if(hyperTouchX === null) return;
+  const dx = e.changedTouches[0].clientX - hyperTouchX;
+  if(Math.abs(dx) > 40) hyperLbStep(dx > 0 ? -1 : 1);
+  hyperTouchX = null;
+});
+
+/* ============================================================
+   KATEGORİLER
+   ------------------------------------------------------------
+   Görseller artık kodun içine elle yazılmıyor. Site, her kategori için
+   assets/eserler/<slug>/ klasöründeki görselleri SIRAYLA (1, 2, 3, ...)
+   dener ve bulduklarını gösterir — manifest, PHP veya build script
+   gerekmez, sadece bu HTML dosyası yeter, GitHub Pages'te de çalışır.
+
+   → Yeni görsel eklemek için: klasördeki en büyük numaradan bir
+     sonrakini kullanıp (ör. 7.jpg) dosyayı klasöre atmanız yeterli,
+     kodda HİÇBİR değişiklik gerekmez. Uzantı jpg/jpeg/png/webp/gif/avif
+     olabilir, karışık da olabilir (1.jpg, 2.webp, 3.png gibi).
+   → ÖNEMLİ: numaralar 1'den başlayıp ARADA BOŞLUK OLMADAN artmalı
+     (1, 2, 3, 4...). Bir numara eksikse (ör. 4 yoksa) site orada
+     durur, 5 ve sonrası görünmez.
+   → Kart başlığı dosya adından üretildiği için (1, 2, 3...) sade bir
+     sıra numarası olarak görünür; isterseniz "aciklamalar.json" ile
+     her görsele açıklama ekleyebilirsiniz (aşağıda).
+   → İsteğe bağlı açıklama (kart altındaki küçük metin) eklemek
+     isterseniz, aynı klasöre "aciklamalar.json" adında bir dosya
+     koyun, içeriği şu şekilde olsun:
+       { "01.webp": "Koç Müzesi, İstanbul", "02.webp": "..." }
+     Bu dosya yoksa sorun değil, açıklama satırı boş görünür.
+
+   Yeni bir kategori eklemek isterseniz (yeni bir buton/klasör),
+   aşağıdaki CATEGORIES dizisine { slug:'...', name:'...' } satırı
+   ekleyip assets/eserler/<slug>/ klasörünü oluşturmanız yeterli.
+============================================================ */
+const CATEGORIES = [
+  { slug:'ataturk',        name:'Mustafa Kemal Atatürk', intro:{
+      title:'Mustafa Kemal Atatürk',
+      paragraphs:[
+        'Mustafa Kemal Atatürk; üstün dehası, sarsılmaz liderliği ve eşsiz ileri görüşlülüğüyle tarihe yön vermiş büyük bir devlet adamıdır. Dahi bir stratejist ve benzersiz bir komutan olarak, bağımsızlık mücadelesini zafere taşıyarak milletine umut olmuş, Türk tarihinin en büyük kahramanlarından biri olarak adını ölümsüzleştirmiştir. Cesareti, kararlılığı ve çağdaş uygarlık hedefiyle yalnızca bir ulusu özgürlüğe kavuşturmakla kalmamış, gelecek nesillere ilham veren kalıcı bir miras bırakmıştır. Atatürk, fikirleri ve eserleriyle bugün de saygı, minnet ve hayranlıkla anılan büyük bir liderdir.',
+        'Dünya tarihinin en büyük devrimcilerinden Gazi Mustafa Kemal Atatürk\'e duyduğumuz sonsuz sevgi, saygı ve minnetle onu yaşatmaya çalışıyoruz. Atatürk üzerine çalışmak bizim için en büyük onur, ilham ve sorumluluktur; onun aziz hatırasını gelecek nesillere aktarmak ve unutturmamak en büyük idealimiz ve varlık sebebimizdir.'
+      ]
+  } },
+  { slug:'milli-saraylar', name:'Milli Saraylar', intro:{
+      title:'Milli Saraylar',
+      paragraphs:[
+        'Geçmişin ihtişamı, bugünün hafızası. Müze saraylar, bir zamanlar hükümdarların ve devlet yöneticilerinin yaşamına tanıklık etmiş, bugün ise tarih ve kültürü yaşatan eşsiz yapılardır. Görkemli mimarileri ve zengin koleksiyonlarıyla ziyaretçilerini geçmişin ihtişamına götürür; her salonu, tarihin izlerini ve kültürel mirası gelecek nesillere aktaran yaşayan birer hafızadır.',
+        'Müze saraylardaki çalışmalarımızda, saray yaşamını ve dönemin insanlarını tarihsel doğrulukla yansıtan gerçekçi canlandırmalar hazırlıyoruz. Orijinal mekânlar ve özgün tefrişlerle oluşturulan bu sahneler, ziyaretçilere geçmişi sanki yeniden yaşıyormuş hissi veren etkileyici bir deneyim sunar.',
+        'Bu çalışmalarımızın en değerli örneklerinden biri Topkapı Sarayı\'ndadır. 15. yüzyıldan 19. yüzyıla kadar Osmanlı İmparatorluğu\'nun yönetim merkezi olan ve bugün dünyanın en saygın müze-sarayları arasında yer alan bu eşsiz mekânda sergilenen heykellerimiz, tarihî mekânın ruhuna ve dönemin gerçekliğine uygun olarak bilimsel araştırmalar ve sanatsal titizlikle hazırlanmıştır. Bu köklü tarihî atmosferin bir parçası olmak, eserlerimizin en büyük gurur kaynaklarından biridir.'
+      ]
+  } },
+  { slug:'yurtdisi',       name:'Yurtdışı Çalışmaları', intro:{
+      title:'Yurtdışı Çalışmalarımız',
+      paragraphs:[
+        'Yurt dışındaki müzeler ve bilim merkezleri için, tarihe yön veren bilim insanlarını ve onların buluşlarını konu alan özel çalışmalar hazırlıyoruz. Bu isimleri en ince ayrıntısına kadar araştırarak gerçekçi heykellerle canlandırırken, icatlarını dönemine özgü dekorlar ve birebir ölçekte yeniden üretilmiş düzeneklerle ziyaretçilerin karşısına çıkarıyoruz.',
+        'Sergilenen her mekanizmayı, ilk tasarımına sadık kalarak — modern teknolojiye başvurmadan, dönemin malzeme ve yöntemleriyle — yeniden inşa ediyoruz. Amacımız yalnızca bir buluşu göstermek değil, o buluşun ardındaki emeği, dehayı ve dönemin ruhunu olduğu gibi yaşatmaktır. Bu anlayışla ürettiğimiz eserler, bugün dünyanın farklı ülkelerindeki müze ve bilim merkezlerinde sergilenmeye devam ediyor.'
+      ]
+  } },
+  { slug:'arkeoloji',      name:'Arkeoloji Müzeleri', intro:{
+      title:'Arkeoloji Müzeleri',
+      paragraphs:[
+        'Arkeoloji müzeleri, geçmiş uygarlıkların izlerini günümüze taşıyan eşsiz kültür hazineleridir. Binlerce yıllık eserleri koruyarak ziyaretçilere tarihin derinliklerinde unutulmaz bir yolculuk sunar. Her eser, insanlığın ortak mirasını anlatan sessiz bir tanık; her sergi ise geçmiş ile gelecek arasında kurulan değerli bir köprüdür.',
+        'Anadolu medeniyetleri, insanlık tarihine yön veren sayısız arkeolojik mirası günümüze ulaştırmıştır. Bu eşsiz eserler, dünya kültür mirasının en değerli hazineleri arasında yer alır. Arkeoloji müzelerindeki çalışmalarımızda, Anadolu\'nun zengin kültürel geçmişini ve atalarımızın yaşamını tarihsel doğrulukla yansıtan gerçekçi sahneler hazırlıyoruz. Amacımız, yazı öncesi ve yazı sonrası dönemleri ziyaretçilere etkileyici ve öğretici bir görsel deneyimle sunmaktır.'
+      ]
+  } },
+  { slug:'etnografya',     name:'Etnografya Müzeleri', intro:{
+      title:'Etnografya Müzeleri',
+      paragraphs:[
+        'Bir toplumun ruhu, elden ele, nesilden nesile. Etnografya müzeleri, toplumların yaşam biçimini, geleneklerini, el sanatlarını ve kültürel değerlerini geleceğe taşıyan kültür merkezleridir. Geçmişin günlük yaşamını, yaşam alanlarını ve üretim kültürünü özgün eserlerle ziyaretçilere sunar; her eser, bir toplumun kimliğini ve zengin mirasını anlatan değerli bir tanıktır.',
+        'Etnografya müzelerindeki çalışmalarımızda, bu toprakların zengin kültürünü, geleneklerini, el sanatlarını ve özgün yaşam biçimini gerçekçi sahnelerle yaşatmayı amaçlıyoruz. Her çalışmamız, kültürel mirasımızın eşsiz zenginliğine duyduğumuz saygının ve onu gelecek nesillere aktarma sorumluluğumuzun bir yansımasıdır.'
+      ]
+  } },
+  { slug:'tarihi-alan',    name:'Çanakkale Savaşları Tarihi Alan', intro:{
+      title:'Çanakkale Savaşları Tarihi Alan Çalışmaları',
+      paragraphs:[
+        'Çanakkale Tarihi Alanı, milletimizin bağımsızlık uğruna verdiği destansı mücadelenin, fedakârlığın ve kahramanlığın en güçlü simgelerinden biridir. Aynı zamanda savaşın acılarını ve barışın kıymetini gelecek nesillere anlatan evrensel bir hatıra mekânıdır.',
+        'Bu anlamlı tarihî alandaki çalışmalarımızda, Çanakkale kahramanlarını ve savaşın unutulmaz anlarını tarihsel doğruluk ve sanatsal titizlikle heykellerimizde yaşatıyoruz. Her eserimiz, aziz kahramanlarımızın hatırasını ölümsüzleştirmek, ziyaretçilere o ruhu hissettirmek ve Çanakkale destanını gelecek nesillere aktarmak amacıyla hazırlanmıştır.'
+      ]
+  } },
+  { slug:'deniz-muzesi',   name:'Çanakkale Deniz Müzesi', intro:{
+      title:'Çanakkale Deniz Müzesi',
+      paragraphs:[
+        'Çimenlik Kalesi\'nde, denizlerin destanını yaşatıyoruz. Çanakkale Deniz Müzesi, Türk denizcilik tarihinin en önemli miraslarını yaşatan, Çimenlik Kalesi\'nin eşsiz tarihî atmosferinde ziyaretçilerini geçmişle buluşturan seçkin bir müzedir.',
+        'Çanakkale ruhunu, deniz savaşlarının kahramanlığını ve bu köklü mirası etkileyici biçimde yaşatan bu müzede yer almak bizim için büyük bir onur ve gurur kaynağıdır. Buradaki heykellerimiz, tarihî gerçekliğe bağlı kalınarak hazırlanmış ve ziyaretçilerin o dönemin ruhunu hissedebilmesi amacıyla tasarlanmıştır.'
+      ]
+  } },
+  { slug:'tipki-benzer',   name:'Tıpkı Benzer Çalışmalar', intro:{
+      title:'Tıpkı Benzer Çalışmalar',
+      paragraphs:[
+        'Bir bakışta tanınan, bir dokunuşta hayat bulan yüzler. Benzetme heykellerimiz, kişilerin fotoğrafları, portreleri ve mevcut görsel kaynakları esas alınarak hazırlanır; her eser, karakterin yüz hatlarını, ifadesini ve kendine özgü duruşunu en doğru şekilde yansıtacak titizlikte şekillendirilir.',
+        'Amacımız, yalnızca fiziksel benzerliği değil; kişinin karakterini ve ruhunu da sanatsal bir yorumla yaşatmaktır.'
+      ]
+  } },
+  { slug:'ozel-muzeler',   name:'Özel Müzeler', intro:{
+      title:'Özel Müzeler',
+      paragraphs:[
+        'Bir kurumun hafızasını, bir mirasın hikâyesini heykelleştiriyoruz. Özel müzeler; kişi, vakıf ya da kurumlar tarafından kurulan, sanat, tarih, kültür ve koleksiyon mirasını koruyup ziyaretçilerle buluşturan seçkin mekânlardır.',
+        'Bu müzelerdeki çalışmalarımızda, tarihî kişilikleri, kültürel değerleri ve önemli yaşam sahnelerini gerçekçi heykeller ve canlandırmalarla yeniden kuruyor, ziyaretçilere etkileyici ve unutulmaz bir deneyim sunuyoruz.'
+      ]
+  } },
+  { slug:'portre',         name:'Portreler', intro:{
+      title:'Heykel Yüzleri',
+      paragraphs:[
+        'Her çizgide bir karakter, her ifadede bir hikâye. Bu bölümde, heykellerimizin yüz ifadelerini ve karakter detaylarını yakından inceleyebilirsiniz. Her portre; gerçekçi modelleme, sanatsal ustalık ve ince işçiliğin bir araya geldiği özgün bir eserdir.'
+      ]
+  } },
+  { slug:'tarih-oncesi',   name:'Tarih Öncesi İnsanlar', intro:{
+      title:'Tarih Öncesi İnsanlar',
+      paragraphs:[
+        'Tarih öncesi çağlara ait çalışmalarımızda, insanlığın ilk yaşam izlerini bilimsel veriler ışığında gerçekçi sahnelerle canlandırıyoruz. Alanında uzman akademisyenler ve bilim insanlarıyla hazırlanan bu eserler, geçmişimizi tarihsel doğrulukla ziyaretçilere sunmaktadır. Her sahne, insanlığın köklü geçmişini keşfetmeye davet eden etkileyici bir zaman yolculuğudur.'
+      ]
+  } },
+  { slug:'film-tv',        name:'Film, TV, Reklam Setleri', intro:{
+      title:'Film, TV, Reklam Setleri Dekor Çalışmaları',
+      paragraphs:[
+        'Kameranın arkasında, sanatın önünde. Uzun yıllar boyunca film, televizyon ve reklam sektöründe pek çok değerli yapımda görev aldık; birlikte çalışma onurunu yaşadığımız sanatçılar ve film ekipleri, mesleki yolculuğumuzun en değerli parçası oldu.',
+        'Bu bölümde, yer aldığımız yapımlardan seçilmiş dekor, aksesuar ve çalışmalarımızdan örnekleri görebilirsiniz.'
+      ]
+  } },
+];
+
+/* Admin panelinden düzenlenen kategori adı/giriş metinleri için
+   varsayılan yedek + localStorage'dan geri yükleme. */
+const CATEGORIES_DEFAULTS = CATEGORIES.map(c => ({
+  slug: c.slug,
+  name: c.name,
+  introTitle: c.intro ? c.intro.title : '',
+  introParagraphs: c.intro ? c.intro.paragraphs.slice() : []
+}));
+const CAT_OVERRIDES_KEY = 'bisanat_cat_overrides';
+function loadCatOverrides(){
+  try{
+    const overrides = mergedOverrides(CAT_OVERRIDES_KEY, 'categories');
+    CATEGORIES.forEach(c=>{
+      const o = overrides[c.slug];
+      if(!o) return;
+      if(typeof o.name === 'string' && o.name.trim()) c.name = o.name;
+      if(c.intro){
+        if(typeof o.introTitle === 'string' && o.introTitle.trim()) c.intro.title = o.introTitle;
+        if(typeof o.introParagraphs === 'string' && o.introParagraphs.trim()){
+          c.intro.paragraphs = o.introParagraphs.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+        }
+      }
+    });
+  }catch(err){ /* bozuk kayıt varsa yoksay */ }
+}
+loadCatOverrides();
+
+/* ============================================================
+   SAYFA METİNLERİ — Admin panelinden düzenlenebilen anasayfa /
+   hakkında / hiperrealizm / iletişim / footer metinleri.
+   'text'       -> düz metin, tek satır input
+   'html'       -> tek blok, <br>/<em> gibi etiketler yazılabilir (textarea)
+   'paragraphs' -> birden fazla <p>, paragraflar arasına boş satır (textarea)
+============================================================ */
+const PAGE_TEXT_FIELDS = [
+  { key:'heroEyebrow',     label:'Hero — Üst Etiket',            el:'#heroEyebrow',        mode:'text' },
+  { key:'heroTitle',       label:'Hero — Ana Başlık',             el:'#heroTitle',          mode:'html',
+    hint:'HTML etiketleri kullanılabilir (ör. <br>, <em>vurgulu kelime</em>).' },
+  { key:'heroSub',         label:'Hero — Alt Metin',              el:'#heroSub',            mode:'html',
+    hint:'HTML etiketleri kullanılabilir (ör. <span class="brand-hl">bisanat</span>).', thumb:'assets/main/hero.webp' },
+  { key:'stat1Num',        label:'İstatistik 1 — Sayı',           el:'#stat1Num',           mode:'text' },
+  { key:'stat1Label',      label:'İstatistik 1 — Etiket',         el:'#stat1Label',         mode:'text' },
+  { key:'stat2Num',        label:'İstatistik 2 — Sayı',           el:'#stat2Num',           mode:'text' },
+  { key:'stat2Label',      label:'İstatistik 2 — Etiket',         el:'#stat2Label',         mode:'text' },
+  { key:'stat3Num',        label:'İstatistik 3 — Sayı',           el:'#stat3Num',           mode:'text' },
+  { key:'stat3Label',      label:'İstatistik 3 — Etiket',         el:'#stat3Label',         mode:'text' },
+  { key:'stat4Num',        label:'İstatistik 4 — Sayı',           el:'#stat4Num',           mode:'text' },
+  { key:'stat4Label',      label:'İstatistik 4 — Etiket',         el:'#stat4Label',         mode:'text' },
+  { key:'bulentBio',       label:'Bülent İşcan — Biyografi',      el:'#bulentBioWrap',      mode:'paragraphs',
+    hint:'Paragraflar arasına boş satır bırakın.', thumb:'assets/main/bulent-iscan.webp' },
+  { key:'senayBio',        label:'Şenay İşcan — Biyografi',       el:'#senayBioWrap',       mode:'paragraphs',
+    hint:'Paragraflar arasına boş satır bırakın.', thumb:'assets/main/senay-iscan.webp' },
+  { key:'aboutPull',       label:'Hakkında — Alıntı Cümlesi',     el:'#aboutPull',          mode:'text' },
+  { key:'hyperCardTitle',  label:'Hiperrealizm Kartı — Başlık',   el:'#hyperCardTitle',     mode:'text' },
+  { key:'hyperCardBody',   label:'Hiperrealizm Kartı — Metin',    el:'#hyperCardBodyWrap',  mode:'paragraphs',
+    hint:'Paragraflar arasına boş satır bırakın. Vurgulu kelime için <em class="gold-text">...</em> kullanılabilir.' },
+  { key:'contactBig',      label:'İletişim — Vurgu Cümlesi',      el:'#contactBig',         mode:'text' },
+  { key:'siteFooter',      label:'Footer Metni',                  el:'#siteFooter',         mode:'text' },
+];
+
+function applyPageText(field, node, value){
+  if(field.mode === 'paragraphs'){
+    const parts = value.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+    node.innerHTML = parts.map(p=>`<p>${p}</p>`).join('');
+  } else if(field.mode === 'html'){
+    node.innerHTML = value;
+  } else {
+    node.textContent = value;
+  }
+}
+
+/* Panel açılmadan önceki, HTML'de yazılı hâliyle varsayılan değerler */
+const PAGE_TEXT_DEFAULTS = {};
+PAGE_TEXT_FIELDS.forEach(f=>{
+  const node = document.querySelector(f.el);
+  if(!node) return;
+  if(f.mode === 'paragraphs'){
+    PAGE_TEXT_DEFAULTS[f.key] = [...node.querySelectorAll(':scope > p')].map(p=>p.innerHTML.trim()).join('\n\n');
+  } else if(f.mode === 'html'){
+    PAGE_TEXT_DEFAULTS[f.key] = node.innerHTML.trim();
+  } else {
+    PAGE_TEXT_DEFAULTS[f.key] = node.textContent.trim();
+  }
+});
+const TEXT_OVERRIDES_KEY = 'bisanat_text_overrides';
+function loadTextOverrides(){
+  try{
+    const overrides = mergedOverrides(TEXT_OVERRIDES_KEY, 'texts');
+    PAGE_TEXT_FIELDS.forEach(f=>{
+      const node = document.querySelector(f.el);
+      if(!node) return;
+      const val = overrides[f.key];
+      if(typeof val === 'string' && val.trim()) applyPageText(f, node, val);
+    });
+  }catch(err){ /* bozuk kayıt varsa yoksay */ }
+}
+loadTextOverrides();
+
+const catChips  = document.getElementById('catChips');
+const grid      = document.getElementById('eserGrid');
+const activeLbl = document.getElementById('catActiveLabel');
+
+let currentSlug = 'all';
+let allViewExpanded = false; /* 'Tümü' görünümünde tüm kategori kartları açık mı */
+let cycleTimers = [];
+const moreLink = document.getElementById('moreLink');
+const catNav      = document.getElementById('catNav');
+const catNavCount = document.getElementById('catNavCount');
+const catPrev      = document.getElementById('catPrev');
+const catNext      = document.getElementById('catNext');
+const catIntro      = document.getElementById('catIntro');
+const catIntroTitle = document.getElementById('catIntroTitle');
+const catIntroBody  = document.getElementById('catIntroBody');
+const catIntroBtn   = document.getElementById('catIntroBtn');
+catIntroBtn.addEventListener('click', async ()=>{
+  catIntro.style.display = 'none';
+  /* 3'lü grid yerine doğrudan gezinme galerisi (lightbox) aç */
+  const slug = currentSlug;
+  const pieces = await loadPieces(slug);
+  if(currentSlug !== slug) return;
+  currentCatPieces = pieces;
+  if(!pieces.length){
+    grid.innerHTML = '<div class="empty-note">Bu kategoride henüz görsel eklenmedi.</div>';
+    return;
+  }
+  openLightbox(slug, 0);
+});
+moreLink.addEventListener('click', e=>{
+  if(currentSlug === 'all'){
+    /* 'Tümü' görünümünde: kalan kategori kartlarını da aç */
+    e.preventDefault();
+    allViewExpanded = true;
+    moreLink.style.display = 'none';
+    renderAll();
+    return;
+  }
+  e.preventDefault();
+});
+
+function imgPath(slug, file){ return `assets/eserler/${slug}/${file}`; }
+
+/* Görsel dosya adından kart başlığı üret: uzantıyı at, tire/alt çizgiyi boşluğa çevir */
+function fileLabel(file){
+  const base = file.replace(/\.[a-zA-Z0-9]+$/, '');
+  return base.replace(/[-_]+/g, ' ').trim();
+}
+
+function clearCycles(){ cycleTimers.forEach(t=>clearInterval(t)); cycleTimers = []; }
+function findCat(slug){ return CATEGORIES.find(c=>c.slug===slug); }
+
+/* ---------- Klasördeki görselleri sırayla deneyerek otomatik okuma ----------
+   Manifest, PHP, build script vs. yok — tamamen bu HTML dosyasının içinde.
+   Klasöre görselleri "1.jpg", "2.jpg", "3.webp"... diye SIRAYLA atmanız
+   yeterli (uzantı jpg/jpeg/png/webp/gif/avif fark etmez, karışık da
+   olabilir). Sayfa açıldığında 1'den başlayarak sırayla "böyle bir
+   dosya var mı?" diye dener; bir numara hiçbir uzantıyla bulunamazsa
+   klasörün bittiğini varsayıp durur. Yeni görsel eklemek için bir
+   sonraki numarayı kullanıp klasöre atmanız yeterli, kodda hiçbir
+   değişiklik gerekmez. */
+const piecesCache = {}; // slug -> [{file, title, desc}]
+const PROBE_EXTS  = ['webp','jpg','jpeg','png','gif','avif'];
+const MAX_PROBE   = 500; // güvenlik sınırı: klasör başına en fazla bu kadar görsel denenir
+const PROBE_GAP   = 3;   // bir numara bulunamazsa, klasörü hemen bitmiş saymadan bu kadar boşluğa tahammül et (1,2,4 gibi atlamalar)
+
+/* Bir sıra numarası için denenecek dosya adı adayları:
+   düz (5.webp) + sıfır dolgulu (05.webp, 005.webp) tüm uzantılarla. */
+function candidateFiles(i){
+  const stems = new Set([String(i)]);
+  if(i < 100) stems.add(String(i).padStart(2,'0'));   // 5 -> 05
+  if(i < 100) stems.add(String(i).padStart(3,'0'));   // 5 -> 005
+  const out = [];
+  stems.forEach(stem => PROBE_EXTS.forEach(ext => out.push(`${stem}.${ext}`)));
+  return out;
+}
+
+/* Bazı kategorilerde görseller sıralı sayı değil, isimli dosyalardır.
+   Bu kategoriler için dosya adlarını burada listeliyoruz; kod bu isimleri
+   sırasıyla kullanır (yine de klasörde var mı diye doğrular). Listede
+   olmayan kategoriler eskisi gibi 1.webp, 2.jpg... diye taranır. */
+const NAMED_PIECES = {
+  'deniz-muzesi': [
+    'Fatih Sultan Mehmet-1.webp',
+    'Fatih Sultan Mehmet-2.webp',
+    'Kartal İstimbotu.webp',
+    'Piri Reis.webp',
+    'Piri Reis-2.webp',
+    'Sadrazam.webp',
+    'Uluç Ali Reis Denizaltısı-Gemi Komutanı.webp'
+  ],
+  'etnografya': [
+    'Adana Arkeoloji Müzesi.webp',
+    'Adana Etnografya Müzesi - Dokumacılar.webp',
+    'Adana Etnografya Müzesi - Kadın.webp',
+    'Adana Etnografya Müzesi - Sergilenen Yöresel Kadın.webp',
+    'Adana Etnografya Müzesi-Yüz Eğiren Kadın.webp',
+    'Atatürk Evi-1 İzmit.webp',
+    'Atatürk Evi-2 İzmit.webp',
+    'Atatürk Evi-3 İzmit.webp',
+    'Atatürk Evi-4 İzmit.webp',
+    'Bartın Arkeoloji Müzesi.webp',
+    'Cizre Müzesi.webp',
+    'Edirne.webp',
+    'Erzurum Arkeoloji Müzesi Etnografya Bölümü.webp',
+    'Eti Göç Müzesi - Göç Edenler.webp',
+    'Eti Göç Müzesi Eskişehir.webp',
+    'Eti Göç Müzesi.webp',
+    'Eti Göz Müzesi Göç Edenler.webp',
+    'Gaziantep Hamam Müzesi.webp',
+    'İslam Eserleri Müzesi -  Hattat.webp',
+    'İslam Eserleri Müzesi Etnografya Bölümü.webp',
+    'İslam Eserleri Müzesi Sultanahmet.webp',
+    'İslam Eserleri Müzesi-1.webp',
+    'İslam Eserleri Müzesi-2.webp',
+    'İznik Müzesi.webp',
+    'Kırşehir Müzesi.webp',
+    'Niğde Müzesi Sergi.webp',
+    'Niğde Müzesi-1.webp',
+    'Niğde Müzesi-2.webp',
+    'Niğde Müzesi-3.webp',
+    'Niğde Müzesi-4.webp',
+    'Niğde Müzesi-5.webp',
+    'Niğde Müzesi-6.webp',
+    'Türkmen Kızı.webp'
+  ],
+  'milli-saraylar': [
+    'Abdülmecid.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Kütüphaneci.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-1.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-2.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-3.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-4.webp',
+    'Topkapı Sarayı 3.Ahmet Kütüphanesi Ulema-5.webp'
+  ],
+  'tarihi-alan': [
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-1.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-2.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-3.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-4.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-5.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-6.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-7.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-8.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-9.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-10.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-11.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-12.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-13.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-14.webp',
+    'Alçıtepe Hilal-i Ahmer Yaralı Hastanesi Sergisi-15.webp',
+    'Kilitbahir Topçu Tabyaları-1.webp',
+    'Kilitbahir Topçu Tabyaları-2.webp',
+    'Kilitbahir Topçu Tabyaları-3.webp',
+    'Kilitbahir Topçu Tabyaları-4.webp',
+    'Kilitbahir Topçu Tabyaları-5.webp',
+    'Kilitbahir Topçu Tabyaları-6.webp',
+    'Mehmetçik Heykeli 5,50m 1.webp',
+    'Mehmetçik Heykeli 5,50m 2.webp',
+    'Mehmetçik Heykeli 5,50m 3.webp',
+    'Mehmetçik Heykeli 5,50m 4.webp',
+    'Mehmetçik Heykeli 5,50m 5.webp',
+    'Mehmetçik Heykeli 5,50m 6.webp',
+    'Mehmetçik Heykeli 5,50m 7.webp',
+    'Mehmetçik Heykeli 5,50m 8.webp',
+    'Mehmetçik Heykeli 5,50m 9.webp',
+    'Mehmetçik Heykeli 5,50m 10.webp'
+  ],
+  'tipki-benzer': [
+    'Adile Naşit, Sinema Müzesi.webp',
+    'Gulyabani, Sinema Müzesi.webp',
+    'Kazım Karabekir Vakfı.webp',
+    'Kemal Sunal, Sinema Müzesi.webp',
+    'Nejat Uygur, Cibali Karakolu Sergisi.webp',
+    'Sinema Müzesi, Yumurcak.webp',
+    'Tarık Akan, Türvak.webp'
+  ],
+  'yurtdisi': [
+    'Çİn Machou Bilim Merkezi-1.webp',
+    'Çİn Machou Bilim Merkezi-2.webp',
+    'Çİn Machou Bilim Merkezi-3.webp',
+    'El Jahiz-1.webp',
+    'El Jahiz-2.webp',
+    'Katar.webp',
+    'Suudi Arabistan-1.webp',
+    'Suudi Arabistan-2.webp',
+    'Ürdün-1.webp',
+    'Ürdün-2.webp',
+    'Ürdün-3.webp'
+  ]
+};
+
+/* Admin panelinden düzenlenen görsel başına isim/açıklama için
+   localStorage'da saklanan override'lar. Anahtar: "slug::dosyaAdı" */
+const PIECE_OVERRIDES_KEY = 'bisanat_piece_overrides';
+function loadPieceOverrides(){
+  try{
+    return mergedOverrides(PIECE_OVERRIDES_KEY, 'pieces');
+  }catch(err){ return {}; }
+}
+
+function probeImage(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload  = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
+
+async function loadPieces(slug){
+  if(piecesCache[slug]) return piecesCache[slug];
+  const files = [];
+  if(NAMED_PIECES[slug]){
+    /* İsimli dosya listesi: sırayı koru, klasörde gerçekten var olanları al */
+    for(const file of NAMED_PIECES[slug]){
+      if(await probeImage(imgPath(slug, file))) files.push(file);
+    }
+  } else {
+    /* Numaralı klasör: dosyalar 1.webp, 2.jpg, 05.png... diye. Yol tamamen
+       numaradan bulunur. Klasör 0'dan da başlayabilsin ve baştaki birkaç
+       numara eksik olsa da (ör. 3.webp'ten başlıyorsa) bulabilsin diye
+       ilk görsele kadar daha toleranslı, bulduktan sonra normal tarıyoruz. */
+    let misses = 0;
+    let foundAny = false;
+    for(let i = 0; i <= MAX_PROBE; i++){
+      let found = null;
+      for(const file of candidateFiles(i)){
+        if(await probeImage(imgPath(slug, file))){ found = file; break; }
+      }
+      if(found){ files.push(found); misses = 0; foundAny = true; }
+      else {
+        if(i === 0) continue; // 0.webp yoksa sorun değil, 1'den devam
+        misses++;
+        // henüz hiç görsel bulunmadıysa baştaki boşluklara geniş tolerans
+        const limit = foundAny ? PROBE_GAP : 10;
+        if(misses > limit) break;
+      }
+    }
+  }
+
+  let descMap = {};
+  try{
+    const dres = await fetch(imgPath(slug, 'aciklamalar.json'));
+    if(dres.ok) descMap = await dres.json();
+  }catch(err){ /* açıklama dosyası yoksa sorun değil, boş kalır */ }
+
+  const pieceOverrides = loadPieceOverrides();
+  const pieces = files.map(file => {
+    const ov = pieceOverrides[`${slug}::${file}`];
+    return {
+      file,
+      title: (ov && ov.title) ? ov.title : fileLabel(file),
+      desc:  (ov && ov.desc)  ? ov.desc  : (descMap[file] || '')
+    };
+  });
+  piecesCache[slug] = pieces;
+  return pieces;
+}
+
+function buildChips(){
+  CATEGORIES.forEach(cat=>{
+    const span = document.createElement('span');
+    span.className = 'chip';
+    span.dataset.cat = cat.slug;
+    span.textContent = cat.name;
+    catChips.appendChild(span);
+  });
+  catChips.addEventListener('click', e=>{
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    setActiveCategory(chip.dataset.cat);
+  });
+}
+
+const isMobile = ()=> window.matchMedia('(max-width:768px)').matches;
+
+function setActiveCategory(slug){
+  currentSlug = slug;
+  [...catChips.children].forEach(c=> c.classList.toggle('active', c.dataset.cat === slug));
+  catIntro.style.display = 'none';
+  if(slug === 'all'){
+    activeLbl.style.display = 'none';
+    activeLbl.classList.remove('back-link');
+    moreLink.textContent = 'Tüm arşivi gör →';
+    catNav.style.display = 'none';
+    if(isMobile()) allViewExpanded = true; /* mobilde 'Tümü' hep tüm kartları gösterir */
+    renderAll(); /* moreLink görünürlüğünü renderAll ayarlar */
+  } else {
+    allViewExpanded = false; /* kategoriye geçince 'Tümü' genişletmesini sıfırla */
+    const cat = findCat(slug);
+    activeLbl.style.display = 'block';
+    activeLbl.textContent = isMobile() ? 'Tüm eserlere dön' : (cat ? cat.name : '');
+    activeLbl.classList.toggle('back-link', isMobile());
+    moreLink.style.display = 'none';
+    renderCategory(slug);
+  }
+}
+/* Mobilde kategori etiketine tıklayınca 'Tümü'ye dön */
+activeLbl.addEventListener('click', ()=>{
+  if(activeLbl.classList.contains('back-link')) setActiveCategory('all');
+});
+
+/* Tümü görünümü: her kategori için 1 kart, kendi görselleri arasında döngü */
+async function renderAll(){
+  clearCycles();
+  grid.classList.remove('category-view');
+  grid.innerHTML = '';
+
+  const ALL_VIEW_CARD_COUNT = 6;
+  const allViewCategories = allViewExpanded ? CATEGORIES.slice() : CATEGORIES.slice(0, ALL_VIEW_CARD_COUNT);
+  /* Gösterilecek kart sayısına göre 'Tüm arşivi gör' bağlantısını göster/gizle */
+  if(allViewExpanded || CATEGORIES.length <= ALL_VIEW_CARD_COUNT){
+    moreLink.style.display = 'none';
+  } else {
+    moreLink.style.display = 'block';
+  }
+
+  allViewCategories.forEach(cat=>{
+    const card = document.createElement('div');
+    card.className = 'piece';
+    card.dataset.slug = cat.slug;
+    card.innerHTML = `<div class="shine"></div><div class="frame"></div>
+      <div class="img-wrap broken">
+        <img class="img-layer layer-a active" alt="">
+        <img class="img-layer layer-b" alt="">
+        <div class="img-fallback"><span class="fb-name">${cat.name}</span><span class="fb-sub">Yükleniyor…</span></div>
+      </div>
+      <div class="meta">
+        <div class="cat-eyebrow">${cat.name}</div>
+        <div class="divider"></div>
+        <h4 class="pc-title">${cat.name}</h4>
+        <div class="loc pc-desc"></div>
+      </div>`;
+    card.addEventListener('click', ()=> setActiveCategory(cat.slug));
+    grid.appendChild(card);
+  });
+
+  allViewCategories.forEach(async (cat, ci)=>{
+    const pieces = await loadPieces(cat.slug);
+    if(currentSlug !== 'all') return; /* bu sırada kullanıcı başka kategoriye geçmiş olabilir */
+    const card = grid.querySelector(`.piece[data-slug="${cat.slug}"]`);
+    if(!card) return;
+    const fbSub = card.querySelector('.fb-sub');
+    if(!pieces.length){ if(fbSub) fbSub.textContent = 'Görsel eklenmedi'; return; }
+
+    const wrapEl  = card.querySelector('.img-wrap');
+    const layerA  = card.querySelector('.layer-a');
+    const layerB  = card.querySelector('.layer-b');
+    const titleEl = card.querySelector('.pc-title');
+    const descEl  = card.querySelector('.pc-desc');
+
+    layerA.onerror = ()=> wrapEl.classList.add('broken');
+    layerA.onload  = ()=> wrapEl.classList.remove('broken');
+    layerA.src = imgPath(cat.slug, pieces[0].file);
+    layerA.alt = pieces[0].title;
+    titleEl.textContent = pieces[0].title;
+    descEl.textContent  = pieces[0].desc || '';
+
+    if(pieces.length > 1){
+      let idx = 0;
+      let showingA = true;
+      const timer = setInterval(()=>{
+        idx = (idx + 1) % pieces.length;
+        const p = pieces[idx];
+        const incoming = showingA ? layerB : layerA;
+        const outgoing = showingA ? layerA : layerB;
+        incoming.onerror = ()=> wrapEl.classList.add('broken');
+        incoming.onload  = ()=> wrapEl.classList.remove('broken');
+        incoming.src = imgPath(cat.slug, p.file);
+        incoming.alt = p.title;
+        incoming.classList.add('active');
+        outgoing.classList.remove('active');
+        titleEl.textContent = p.title;
+        descEl.textContent  = p.desc || '';
+        showingA = !showingA;
+      }, 3600 + ci*180); /* kartlar arasında hafif faz farkı */
+      cycleTimers.push(timer);
+    }
+  });
+}
+
+/* Kategori görünümü: klasördeki her görsel için 1 kart */
+function pieceCardHTML(cat, p, i){
+  return `<div class="shine"></div><div class="frame"></div>
+      <div class="img-box">
+        <img src="${imgPath(cat.slug, p.file)}" alt="${p.title}" onerror="this.closest('.img-box').classList.add('broken')">
+        <div class="img-fallback"><span class="fb-name">${cat.name}</span><span class="fb-sub">Görsel eklenmedi</span></div>
+      </div>
+      <div class="meta">
+        <div class="num">${cat.name}</div>
+        <div class="divider"></div>
+        <h4>${p.title}</h4>
+        <div class="loc">${p.desc || ''}</div>
+      </div>`;
+}
+
+const CATEGORY_PAGE_SIZE = 3;
+let categoryStart = 0;
+let currentCatPieces = [];
+
+function renderCategoryPage(slug, startIndex){
+  const cat = findCat(slug);
+  if(!cat) return;
+  const pieces = currentCatPieces;
+  categoryStart = startIndex;
+  grid.innerHTML = '';
+  const end = Math.min(startIndex + CATEGORY_PAGE_SIZE, pieces.length);
+  for(let i = startIndex; i < end; i++){
+    const p = pieces[i];
+    const card = document.createElement('div');
+    card.className = 'piece';
+    card.innerHTML = pieceCardHTML(cat, p, i);
+    card.addEventListener('click', ()=> openLightbox(slug, i));
+    grid.appendChild(card);
+  }
+  catNav.style.display = pieces.length > 0 ? 'flex' : 'none';
+  catNavCount.textContent = pieces.length ? `${startIndex+1}–${end} / ${pieces.length}` : '';
+  catPrev.disabled = startIndex <= 0;
+  catNext.disabled = end >= pieces.length;
+}
+
+catPrev.addEventListener('click', ()=>{
+  if(currentSlug === 'all') return;
+  renderCategoryPage(currentSlug, Math.max(0, categoryStart - CATEGORY_PAGE_SIZE));
+});
+catNext.addEventListener('click', ()=>{
+  if(currentSlug === 'all') return;
+  if(categoryStart + CATEGORY_PAGE_SIZE < currentCatPieces.length){
+    renderCategoryPage(currentSlug, categoryStart + CATEGORY_PAGE_SIZE);
+  }
+});
+
+async function renderCategory(slug){
+  clearCycles();
+  grid.classList.add('category-view');
+  grid.innerHTML = '';
+  catNav.style.display = 'none';
+  const cat = findCat(slug);
+
+  if(cat && cat.intro){
+    catIntroTitle.textContent = cat.intro.title || cat.name;
+    catIntroBody.innerHTML = cat.intro.paragraphs.map(p => `<p>${p}</p>`).join('');
+    catIntro.style.display = 'block';
+    return; /* galeri, "Görselleri Gör" butonuna basınca yüklenir */
+  }
+
+  catIntro.style.display = 'none';
+  await loadCategoryGallery(slug);
+}
+
+async function loadCategoryGallery(slug){
+  grid.innerHTML = '<div class="empty-note">Yükleniyor…</div>';
+  catNav.style.display = 'none';
+  const cat = findCat(slug);
+  const pieces = await loadPieces(slug);
+  if(currentSlug !== slug) return; /* bu sırada kullanıcı başka kategoriye geçmiş olabilir */
+  currentCatPieces = pieces;
+  grid.innerHTML = '';
+  if(!cat || !pieces.length){
+    grid.innerHTML = '<div class="empty-note">Bu kategoride henüz görsel eklenmedi.</div>';
+    catNav.style.display = 'none';
+    return;
+  }
+  renderCategoryPage(slug, 0);
+}
+
+/* ---------- Tam ekran slayt gösterisi ---------- */
+const lightbox   = document.getElementById('lightbox');
+const lbImg      = document.getElementById('lbImg');
+const lbFallback = document.getElementById('lbFallback');
+const lbFbName   = document.getElementById('lbFbName');
+const lbTitle    = document.getElementById('lbTitle');
+const lbDesc     = document.getElementById('lbDesc');
+const lbCounter  = document.getElementById('lbCounter');
+let lbSlug = null, lbIndex = 0, lbPieces = [];
+
+function openLightbox(slug, index){
+  lbSlug = slug; lbIndex = index;
+  lbPieces = (slug === currentSlug) ? currentCatPieces : (piecesCache[slug] || []);
+  updateLightbox();
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+  /* Galeri doğrudan lightbox olarak açıldıysa (grid yok), kapanınca
+     boş ekran yerine kategori tanıtımına geri dön */
+  if(currentSlug !== 'all' && !grid.querySelector('.img-box') && catIntro){
+    const cat = findCat(currentSlug);
+    if(cat && cat.intro){
+      catIntroTitle.textContent = cat.intro.title || cat.name;
+      catIntroBody.innerHTML = cat.intro.paragraphs.map(p => `<p>${p}</p>`).join('');
+      catIntro.style.display = 'block';
+    }
+  }
+}
+function updateLightbox(){
+  const cat = findCat(lbSlug);
+  if(!cat || !lbPieces.length) return;
+  const p = lbPieces[lbIndex];
+  lbImg.classList.remove('broken');
+  lbFallback.classList.remove('show');
+  lbImg.onerror = ()=>{ lbImg.classList.add('broken'); lbFbName.textContent = cat.name; lbFallback.classList.add('show'); };
+  lbImg.onload  = ()=>{ lbImg.classList.remove('broken'); lbFallback.classList.remove('show'); };
+  lbImg.src = imgPath(cat.slug, p.file);
+  lbImg.alt = p.title;
+  lbTitle.textContent = p.title;
+  lbDesc.textContent  = p.desc || '';
+  lbCounter.textContent = `${lbIndex+1} / ${lbPieces.length} · ${cat.name}`;
+}
+function lbStep(dir){
+  if(!lbPieces.length) return;
+  lbIndex = (lbIndex + dir + lbPieces.length) % lbPieces.length;
+  updateLightbox();
+}
+
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', ()=>lbStep(-1));
+document.getElementById('lbNext').addEventListener('click', ()=>lbStep(1));
+lightbox.addEventListener('click', e=>{ if(e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e=>{
+  if(!lightbox.classList.contains('open')) return;
+  if(e.key === 'Escape') closeLightbox();
+  if(e.key === 'ArrowLeft') lbStep(-1);
+  if(e.key === 'ArrowRight') lbStep(1);
+});
+/* Dokunmatik kaydırma ile ilerleme */
+let touchX = null;
+lightbox.addEventListener('touchstart', e=> touchX = e.touches[0].clientX);
+lightbox.addEventListener('touchend', e=>{
+  if(touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 40) lbStep(dx > 0 ? -1 : 1);
+  touchX = null;
+});
+
+buildChips();
+if(isMobile()) allViewExpanded = true; /* mobilde açılışta tüm kartlar görünsün */
+renderAll();
+renderHyperGrid();
+
+/* ---------- Biyografi 'Devamını oku' aç/kapa ---------- */
+(function initBioToggles(){
+  document.querySelectorAll('.bio-more').forEach(btn=>{
+    const wrap = document.getElementById(btn.dataset.target);
+    if(!wrap) return;
+    btn.addEventListener('click', ()=>{
+      const collapsed = wrap.classList.contains('collapsed');
+      if(collapsed){
+        wrap.classList.remove('collapsed');
+        wrap.style.maxHeight = wrap.scrollHeight + 'px';
+        btn.classList.add('open');
+        btn.childNodes[0].nodeValue = 'Daha az göster';
+      } else {
+        /* önce mevcut yüksekliği sabitle, sonra kapat (yumuşak geçiş için) */
+        wrap.style.maxHeight = wrap.scrollHeight + 'px';
+        requestAnimationFrame(()=>{
+          wrap.classList.add('collapsed');
+          wrap.style.maxHeight = '';
+        });
+        btn.classList.remove('open');
+        btn.childNodes[0].nodeValue = 'Devamını oku';
+      }
+    });
+  });
+})();
+
+/* ---------- Mobil menü (hamburger) ---------- */
+(function initMobileNav(){
+  const toggle = document.getElementById('navToggle');
+  const nav    = document.getElementById('mainNav');
+  if(!toggle || !nav) return;
+  toggle.addEventListener('click', ()=>{
+    const open = nav.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  nav.querySelectorAll('a').forEach(a=>{
+    a.addEventListener('click', ()=>{
+      nav.classList.remove('open');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded','false');
+    });
+  });
+})();
+
+/* ---------- İletişim haritaları (Leaflet + logo.webp işaretçi) ---------- */
+(function initContactMaps(){
+  if(typeof L === 'undefined') return; /* Leaflet yüklenemediyse sessizce geç */
+  const logoIcon = L.divIcon({
+    className:'',
+    html:'<div class="loc-marker-logo"><img src="assets/main/logo.webp" alt="bisanat"></div>',
+    iconSize:[44,44],
+    iconAnchor:[22,44],
+    popupAnchor:[0,-44]
+  });
+  const locations = [
+    { id:'map-istanbul', lat:40.971590, lng:29.116698, label:'Ataşehir Atölyesi' },
+    { id:'map-salgamli', lat:41.054490, lng:27.007420, label:'Şalgamlı Atölyesi' }
+  ];
+  locations.forEach(loc=>{
+    const el = document.getElementById(loc.id);
+    if(!el) return;
+    const map = L.map(loc.id, { scrollWheelZoom:false, attributionControl:true }).setView([loc.lat, loc.lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom:19,
+      attribution:'&copy; OpenStreetMap'
+    }).addTo(map);
+    L.marker([loc.lat, loc.lng], { icon:logoIcon }).addTo(map).bindPopup(loc.label);
+    /* bölüm görünür olduğunda boyutu düzelt (gizli iken açılırsa gri kalmasın) */
+    setTimeout(()=> map.invalidateSize(), 300);
+  });
+})();
+
+/* Görsellere sağ klik ile indirmeyi / sürükleyerek kaydetmeyi engelle */
+document.addEventListener('contextmenu', e=>{
+  if(e.target.tagName === 'IMG') e.preventDefault();
+});
+document.addEventListener('dragstart', e=>{
+  if(e.target.tagName === 'IMG') e.preventDefault();
+});
+
+/* ===================== ADMIN PANEL ===================== */
+(function(){
+  const ADMIN_PASSWORD   = 'bisanat2025'; /* İsterseniz burayı değiştirin */
+  const LONG_PRESS_MS    = 4000;
+
+  const trigger       = document.getElementById('adminTrigger');
+  const triggerHeader = document.getElementById('adminTriggerHeader');
+  const triggers      = [trigger, triggerHeader].filter(Boolean);
+  const pwOverlay     = document.getElementById('adminPwOverlay');
+  const pwInput       = document.getElementById('adminPwInput');
+  const pwError       = document.getElementById('adminPwError');
+  const pwSubmit      = document.getElementById('adminPwSubmit');
+  const pwCancel      = document.getElementById('adminPwCancel');
+  const panelOverlay  = document.getElementById('adminPanelOverlay');
+  const panelClose    = document.getElementById('adminPanelClose');
+  const fieldsWrap    = document.getElementById('adminFields');
+  const catFieldsWrap = document.getElementById('adminCatFields');
+  const textFieldsWrap= document.getElementById('adminTextFields');
+  const imgFieldsWrap = document.getElementById('adminImgFields');
+  const imgCatSelect  = document.getElementById('adminImgCatSelect');
+  const saveBtn       = document.getElementById('adminSaveBtn');
+  const resetBtn      = document.getElementById('adminResetBtn');
+  const saveNote      = document.getElementById('adminSaveNote');
+  const tabTextBtn    = document.getElementById('adminTabTextBtn');
+  const tabHyperBtn   = document.getElementById('adminTabHyperBtn');
+  const tabCatBtn     = document.getElementById('adminTabCatBtn');
+  const tabImgBtn     = document.getElementById('adminTabImgBtn');
+  const tabTextPanel  = document.getElementById('adminTabText');
+  const tabHyperPanel = document.getElementById('adminTabHyper');
+  const tabCatPanel   = document.getElementById('adminTabCat');
+  const tabImgPanel   = document.getElementById('adminTabImg');
+
+  const required = { pwOverlay, pwInput, pwError, pwSubmit, pwCancel, panelOverlay, panelClose, fieldsWrap,
+    catFieldsWrap, textFieldsWrap, imgFieldsWrap, imgCatSelect, saveBtn, resetBtn, saveNote,
+    tabTextBtn, tabHyperBtn, tabCatBtn, tabImgBtn, tabTextPanel, tabHyperPanel, tabCatPanel, tabImgPanel };
+  const missing = Object.keys(required).filter(k => !required[k]);
+  if(triggers.length === 0 || missing.length){
+    console.warn('Admin panel devre dışı: eksik elementler ->', triggers.length===0 ? '[trigger]' : '', missing.join(', '));
+    return;
+  }
+
+  console.log('bisanat admin paneli hazır — logoya 4sn basılı tutun.');
+
+  let pressTimer = null;
+  let pressing = false;
+
+  function startPress(e){
+    if(pressing) return;
+    pressing = true;
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(()=>{
+      if(pressing) openPasswordModal();
+    }, LONG_PRESS_MS);
+  }
+  function cancelPress(){
+    pressing = false;
+    clearTimeout(pressTimer);
+  }
+
+  triggers.forEach(el=>{
+    el.addEventListener('pointerdown', startPress);
+    el.addEventListener('pointerup', cancelPress);
+    el.addEventListener('pointercancel', cancelPress);
+    /* Eski tarayıcılar için yedek olay dinleyicileri */
+    el.addEventListener('mousedown', startPress);
+    el.addEventListener('mouseup', cancelPress);
+    el.addEventListener('touchstart', startPress, {passive:true});
+    el.addEventListener('touchend', cancelPress);
+    el.addEventListener('touchcancel', cancelPress);
+    el.addEventListener('contextmenu', e=> e.preventDefault());
+  });
+
+  function openPasswordModal(){
+    pwInput.value = '';
+    pwError.classList.remove('show');
+    pwOverlay.classList.add('open');
+    setTimeout(()=> pwInput.focus(), 50);
+  }
+  function closePasswordModal(){ pwOverlay.classList.remove('open'); }
+
+  function checkPassword(){
+    if(pwInput.value === ADMIN_PASSWORD){
+      closePasswordModal();
+      openAdminPanel();
+    } else {
+      pwError.classList.add('show');
+    }
+  }
+  pwSubmit.addEventListener('click', checkPassword);
+  pwInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') checkPassword(); });
+  pwCancel.addEventListener('click', closePasswordModal);
+  pwOverlay.addEventListener('click', e=>{ if(e.target === pwOverlay) closePasswordModal(); });
+
+  /* ---------- Sekme geçişi ---------- */
+  let currentAdminTab = 'hyper';
+  function showTab(name){
+    currentAdminTab = name;
+    tabTextBtn.classList.toggle('active', name==='text');
+    tabHyperBtn.classList.toggle('active', name==='hyper');
+    tabCatBtn.classList.toggle('active', name==='cat');
+    tabImgBtn.classList.toggle('active', name==='img');
+    tabTextPanel.classList.toggle('active', name==='text');
+    tabHyperPanel.classList.toggle('active', name==='hyper');
+    tabCatPanel.classList.toggle('active', name==='cat');
+    tabImgPanel.classList.toggle('active', name==='img');
+    if(name === 'img' && !imgCatSelect.options.length) initImgTab();
+  }
+  tabTextBtn.addEventListener('click', ()=> showTab('text'));
+  tabHyperBtn.addEventListener('click', ()=> showTab('hyper'));
+  tabCatBtn.addEventListener('click', ()=> showTab('cat'));
+  tabImgBtn.addEventListener('click', ()=> showTab('img'));
+
+  /* ---------- Küçük görsel önizlemesi doldurma yardımcı fonksiyonu ---------- */
+  function fillThumb(thumbEl, src){
+    if(!thumbEl) return;
+    if(!src){ thumbEl.classList.add('empty'); return; }
+    const img = document.createElement('img');
+    img.alt = '';
+    img.onerror = ()=>{ thumbEl.classList.add('empty'); img.remove(); };
+    img.src = src;
+    thumbEl.appendChild(img);
+  }
+
+  /* ---------- Sekme 1: Sayfa Metinleri ---------- */
+  function buildTextFields(){
+    textFieldsWrap.innerHTML = '';
+    PAGE_TEXT_FIELDS.forEach(f=>{
+      const node = document.querySelector(f.el);
+      if(!node) return;
+      let currentVal;
+      if(f.mode === 'paragraphs'){
+        currentVal = [...node.querySelectorAll(':scope > p')].map(p=>p.innerHTML.trim()).join('\n\n');
+      } else if(f.mode === 'html'){
+        currentVal = node.innerHTML.trim();
+      } else {
+        currentVal = node.textContent.trim();
+      }
+      const box = document.createElement('div');
+      box.className = 'admin-field';
+      const thumbId = `thumbTxt_${f.key}`;
+      const thumbHtml = f.thumb ? `<div class="admin-thumb" id="${thumbId}"></div>` : '';
+      const fieldHtml = (f.mode === 'text')
+        ? `<input type="text" class="admin-input admin-text-input" data-key="${f.key}" value="${currentVal.replace(/"/g,'&quot;')}">`
+        : `<textarea class="admin-input admin-text-input" data-key="${f.key}">${currentVal}</textarea>`;
+      box.innerHTML = `
+        <div class="admin-field-head">${thumbHtml}<div class="admin-field-label">${f.label}</div></div>
+        ${fieldHtml}
+        ${f.hint ? `<div class="admin-field-hint">${f.hint}</div>` : ''}`;
+      textFieldsWrap.appendChild(box);
+      if(f.thumb) fillThumb(document.getElementById(thumbId), f.thumb);
+    });
+  }
+
+  /* ---------- Sekme 2: Sanatta Bir Yaklaşım kartları ---------- */
+  function buildFields(){
+    fieldsWrap.innerHTML = '';
+    HYPER_WORKS.forEach(work=>{
+      const box = document.createElement('div');
+      box.className = 'admin-field';
+      const thumbId = `thumbHyper_${work.slug}`;
+      box.innerHTML = `
+        <div class="admin-field-head"><div class="admin-thumb" id="${thumbId}"></div>
+          <div class="admin-field-label">Kart ${work.slug} — assets/atolye/${work.slug}/</div></div>
+        <label>Başlık</label>
+        <input type="text" class="admin-input admin-title-input" data-slug="${work.slug}" value="${work.title.replace(/"/g,'&quot;')}">
+        <label>Açıklama</label>
+        <textarea class="admin-input admin-desc-input" data-slug="${work.slug}">${work.desc}</textarea>`;
+      fieldsWrap.appendChild(box);
+    });
+    HYPER_WORKS.forEach(async work=>{
+      const files = hyperImagesCache[work.slug] || await loadHyperImages(work.slug);
+      hyperImagesCache[work.slug] = files;
+      fillThumb(document.getElementById(`thumbHyper_${work.slug}`), files.length ? hyperImgPath(work.slug, files[0]) : null);
+    });
+  }
+
+  /* ---------- Sekme 3: Eserler Kategorileri ---------- */
+  function buildCatFields(){
+    catFieldsWrap.innerHTML = '';
+    CATEGORIES.forEach(cat=>{
+      const box = document.createElement('div');
+      box.className = 'admin-field';
+      const introTitle = cat.intro ? cat.intro.title : '';
+      const introParas = cat.intro ? cat.intro.paragraphs.join('\n\n') : '';
+      const thumbId = `thumbCat_${cat.slug}`;
+      box.innerHTML = `
+        <div class="admin-field-head"><div class="admin-thumb" id="${thumbId}"></div>
+          <div class="admin-field-label">${cat.name} — assets/eserler/${cat.slug}/</div></div>
+        <label>Kategori Adı</label>
+        <input type="text" class="admin-input admin-cat-name-input" data-slug="${cat.slug}" value="${cat.name.replace(/"/g,'&quot;')}">
+        <label>Giriş Başlığı</label>
+        <input type="text" class="admin-input admin-cat-title-input" data-slug="${cat.slug}" value="${introTitle.replace(/"/g,'&quot;')}">
+        <label>Giriş Açıklaması (paragraflar arasına boş satır bırakın)</label>
+        <textarea class="admin-input admin-cat-desc-input" data-slug="${cat.slug}">${introParas}</textarea>`;
+      catFieldsWrap.appendChild(box);
+    });
+    CATEGORIES.forEach(async cat=>{
+      const pieces = await loadPieces(cat.slug);
+      fillThumb(document.getElementById(`thumbCat_${cat.slug}`), pieces.length ? imgPath(cat.slug, pieces[0].file) : null);
+    });
+  }
+  function updateCatChipLabels(){
+    [...catChips.children].forEach(chip=>{
+      const cat = findCat(chip.dataset.cat);
+      if(cat) chip.textContent = cat.name;
+    });
+    if(currentSlug !== 'all'){
+      const cat = findCat(currentSlug);
+      if(cat) activeLbl.textContent = cat.name;
+    }
+  }
+
+  /* ---------- Sekme 4: Galeri Görselleri (kategori içindeki her görsel tek tek) ---------- */
+  let currentImgSlug = null;
+  const pendingPieceEdits = {}; // "slug::file" -> {title, desc}, henüz kaydedilmemiş değişiklikler
+
+  function initImgTab(){
+    imgCatSelect.innerHTML = '';
+    CATEGORIES.forEach(cat=>{
+      const opt = document.createElement('option');
+      opt.value = cat.slug;
+      opt.textContent = cat.name;
+      imgCatSelect.appendChild(opt);
+    });
+    buildImgFieldsForCat(CATEGORIES[0] ? CATEGORIES[0].slug : null);
+  }
+  imgCatSelect.addEventListener('change', ()=> buildImgFieldsForCat(imgCatSelect.value));
+
+  function harvestImgFields(){
+    if(!currentImgSlug) return;
+    imgFieldsWrap.querySelectorAll('.admin-piece-field').forEach(row=>{
+      const file = row.dataset.file;
+      const title = row.querySelector('.admin-piece-title').value.trim();
+      const desc  = row.querySelector('.admin-piece-desc').value.trim();
+      pendingPieceEdits[`${currentImgSlug}::${file}`] = { title, desc };
+    });
+  }
+
+  async function buildImgFieldsForCat(slug){
+    harvestImgFields(); /* önceki kategoride yazılanları kaybetmemek için önce kaydet */
+    if(!slug) return;
+    currentImgSlug = slug;
+    imgCatSelect.value = slug;
+    imgFieldsWrap.innerHTML = '<p class="admin-pw-hint">Görseller yükleniyor…</p>';
+    const pieces = await loadPieces(slug);
+    if(currentImgSlug !== slug) return; /* bu sırada başka kategoriye geçilmiş olabilir */
+    imgFieldsWrap.innerHTML = '';
+    if(!pieces.length){
+      imgFieldsWrap.innerHTML = '<p class="admin-pw-hint">Bu kategoride henüz görsel bulunamadı (assets/eserler/'+slug+'/ klasörü boş).</p>';
+      return;
+    }
+    pieces.forEach(p=>{
+      const pending = pendingPieceEdits[`${slug}::${p.file}`];
+      const title = pending ? pending.title : p.title;
+      const desc  = pending ? pending.desc  : p.desc;
+      const row = document.createElement('div');
+      row.className = 'admin-field admin-piece-field';
+      row.dataset.file = p.file;
+      const thumbId = `thumbImg_${slug}_${p.file.replace(/[^a-zA-Z0-9]/g,'_')}`;
+      row.innerHTML = `
+        <div class="admin-field-head"><div class="admin-thumb" id="${thumbId}"></div>
+          <div class="admin-field-label">${p.file}</div></div>
+        <label>Kart / Görsel İsmi</label>
+        <input type="text" class="admin-input admin-piece-title" value="${(title||'').replace(/"/g,'&quot;')}">
+        <label>Açıklama (opsiyonel, kart altında görünür)</label>
+        <textarea class="admin-input admin-piece-desc">${desc||''}</textarea>`;
+      imgFieldsWrap.appendChild(row);
+      fillThumb(document.getElementById(thumbId), imgPath(slug, p.file));
+    });
+  }
+
+  function openAdminPanel(){
+    buildTextFields();
+    buildFields();
+    buildCatFields();
+    showTab(currentAdminTab);
+    saveNote.classList.remove('show');
+    panelOverlay.classList.add('open');
+  }
+  function closeAdminPanel(){ panelOverlay.classList.remove('open'); }
+  panelClose.addEventListener('click', closeAdminPanel);
+  panelOverlay.addEventListener('click', e=>{ if(e.target === panelOverlay) closeAdminPanel(); });
+
+  function saveEdits(){
+    /* Sanatta Bir Yaklaşım kartları */
+    const hyperOverrides = {};
+    fieldsWrap.querySelectorAll('.admin-title-input').forEach(inp=>{
+      const slug = inp.dataset.slug;
+      hyperOverrides[slug] = hyperOverrides[slug] || {};
+      hyperOverrides[slug].title = inp.value.trim();
+    });
+    fieldsWrap.querySelectorAll('.admin-desc-input').forEach(ta=>{
+      const slug = ta.dataset.slug;
+      hyperOverrides[slug] = hyperOverrides[slug] || {};
+      hyperOverrides[slug].desc = ta.value.trim();
+    });
+    HYPER_WORKS.forEach(w=>{
+      const o = hyperOverrides[w.slug];
+      if(o){
+        if(o.title) w.title = o.title;
+        if(o.desc)  w.desc  = o.desc;
+      }
+    });
+    try{ localStorage.setItem(HYPER_OVERRIDES_KEY, JSON.stringify(hyperOverrides)); }catch(err){ /* depolama dolu/olmayabilir */ }
+    renderHyperGrid();
+
+    /* Eserler Kategorileri */
+    const catOverrides = {};
+    catFieldsWrap.querySelectorAll('.admin-cat-name-input').forEach(inp=>{
+      const slug = inp.dataset.slug;
+      catOverrides[slug] = catOverrides[slug] || {};
+      catOverrides[slug].name = inp.value.trim();
+    });
+    catFieldsWrap.querySelectorAll('.admin-cat-title-input').forEach(inp=>{
+      const slug = inp.dataset.slug;
+      catOverrides[slug] = catOverrides[slug] || {};
+      catOverrides[slug].introTitle = inp.value.trim();
+    });
+    catFieldsWrap.querySelectorAll('.admin-cat-desc-input').forEach(ta=>{
+      const slug = ta.dataset.slug;
+      catOverrides[slug] = catOverrides[slug] || {};
+      catOverrides[slug].introParagraphs = ta.value.trim();
+    });
+    CATEGORIES.forEach(c=>{
+      const o = catOverrides[c.slug];
+      if(!o) return;
+      if(o.name) c.name = o.name;
+      if(c.intro){
+        if(o.introTitle) c.intro.title = o.introTitle;
+        if(o.introParagraphs) c.intro.paragraphs = o.introParagraphs.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+      }
+    });
+    try{ localStorage.setItem(CAT_OVERRIDES_KEY, JSON.stringify(catOverrides)); }catch(err){ /* depolama dolu/olmayabilir */ }
+    updateCatChipLabels();
+
+    /* Sayfa Metinleri */
+    const textOverrides = {};
+    textFieldsWrap.querySelectorAll('[data-key]').forEach(elm=>{
+      textOverrides[elm.dataset.key] = elm.value;
+    });
+    PAGE_TEXT_FIELDS.forEach(f=>{
+      const node = document.querySelector(f.el);
+      const val = textOverrides[f.key];
+      if(node && typeof val === 'string' && val.trim()) applyPageText(f, node, val);
+    });
+    try{ localStorage.setItem(TEXT_OVERRIDES_KEY, JSON.stringify(textOverrides)); }catch(err){ /* depolama dolu/olmayabilir */ }
+
+    /* Galeri Görselleri (kategori içindeki her görselin ismi/açıklaması) */
+    harvestImgFields();
+    const pieceOverrides = loadPieceOverrides();
+    Object.keys(pendingPieceEdits).forEach(key=>{
+      const edit = pendingPieceEdits[key];
+      const entry = {};
+      if(edit.title) entry.title = edit.title;
+      if(edit.desc)  entry.desc  = edit.desc;
+      if(Object.keys(entry).length){
+        pieceOverrides[key] = entry;
+        const [slug, file] = key.split('::');
+        const pieces = piecesCache[slug];
+        const piece = pieces && pieces.find(pc=>pc.file===file);
+        if(piece){
+          piece.title = entry.title || fileLabel(file);
+          piece.desc  = entry.desc  || '';
+        }
+      } else {
+        delete pieceOverrides[key];
+      }
+    });
+    try{ localStorage.setItem(PIECE_OVERRIDES_KEY, JSON.stringify(pieceOverrides)); }catch(err){ /* depolama dolu/olmayabilir */ }
+    /* açık olan galeri görünümünü güncel isimlerle tazele */
+    if(currentSlug === 'all') renderAll(); else renderCategory(currentSlug);
+
+    saveNote.classList.add('show');
+    setTimeout(()=> saveNote.classList.remove('show'), 2500);
+  }
+  saveBtn.addEventListener('click', saveEdits);
+
+  function resetEdits(){
+    if(currentAdminTab === 'hyper'){
+      HYPER_WORKS.forEach((w, i)=>{
+        w.title = HYPER_WORKS_DEFAULTS[i].title;
+        w.desc  = HYPER_WORKS_DEFAULTS[i].desc;
+      });
+      try{ localStorage.removeItem(HYPER_OVERRIDES_KEY); }catch(err){}
+      buildFields();
+      renderHyperGrid();
+    } else if(currentAdminTab === 'cat'){
+      CATEGORIES.forEach((c, i)=>{
+        c.name = CATEGORIES_DEFAULTS[i].name;
+        if(c.intro){
+          c.intro.title = CATEGORIES_DEFAULTS[i].introTitle;
+          c.intro.paragraphs = CATEGORIES_DEFAULTS[i].introParagraphs.slice();
+        }
+      });
+      try{ localStorage.removeItem(CAT_OVERRIDES_KEY); }catch(err){}
+      buildCatFields();
+      updateCatChipLabels();
+    } else if(currentAdminTab === 'text'){
+      PAGE_TEXT_FIELDS.forEach(f=>{
+        const node = document.querySelector(f.el);
+        if(node) applyPageText(f, node, PAGE_TEXT_DEFAULTS[f.key]);
+      });
+      try{ localStorage.removeItem(TEXT_OVERRIDES_KEY); }catch(err){}
+      buildTextFields();
+    } else if(currentAdminTab === 'img'){
+      const slug = imgCatSelect.value;
+      if(slug){
+        const pieceOverrides = loadPieceOverrides();
+        Object.keys(pieceOverrides).forEach(key=>{ if(key.startsWith(slug+'::')) delete pieceOverrides[key]; });
+        try{ localStorage.setItem(PIECE_OVERRIDES_KEY, JSON.stringify(pieceOverrides)); }catch(err){}
+        Object.keys(pendingPieceEdits).forEach(key=>{ if(key.startsWith(slug+'::')) delete pendingPieceEdits[key]; });
+        delete piecesCache[slug]; /* dosya adından ve aciklamalar.json'dan temiz yeniden yükle */
+        buildImgFieldsForCat(slug);
+        if(currentSlug === slug) renderCategory(slug); else if(currentSlug === 'all') renderAll();
+      }
+    }
+  }
+  resetBtn.addEventListener('click', resetEdits);
+
+  /* ---------- Düzenlemeleri indir / geri yükle (JSON) ---------- */
+  const exportBtn  = document.getElementById('adminExportBtn');
+  const importBtn  = document.getElementById('adminImportBtn');
+  const importInput= document.getElementById('adminImportInput');
+  const ioNote     = document.getElementById('adminIoNote');
+  const IO_KEYS = {
+    pieces:     PIECE_OVERRIDES_KEY,
+    categories: CAT_OVERRIDES_KEY,
+    texts:      TEXT_OVERRIDES_KEY,
+    hyper:      HYPER_OVERRIDES_KEY
+  };
+  function ioMsg(text, ok){
+    if(!ioNote) return;
+    ioNote.textContent = text;
+    ioNote.className = 'admin-save-note admin-io-note show ' + (ok ? 'ok' : 'err');
+    if(ok) setTimeout(()=> ioNote.classList.remove('show'), 4000);
+  }
+  function readKey(k){
+    try{ const raw = localStorage.getItem(k); return raw ? JSON.parse(raw) : {}; }
+    catch(err){ return {}; }
+  }
+  function doExport(){
+    /* açık sekmede yazılmış ama henüz kaydedilmemiş görsel alanlarını da dahil et */
+    harvestImgFields();
+    const pieceLive = readKey(IO_KEYS.pieces);
+    Object.keys(pendingPieceEdits).forEach(key=>{
+      const e = pendingPieceEdits[key], entry = {};
+      if(e.title) entry.title = e.title;
+      if(e.desc)  entry.desc  = e.desc;
+      if(Object.keys(entry).length) pieceLive[key] = entry;
+    });
+    const data = {
+      _format: 'bisanat-icerik',
+      _version: 1,
+      _exportedAt: new Date().toISOString(),
+      pieces: pieceLive,
+      categories: readKey(IO_KEYS.categories),
+      texts: readKey(IO_KEYS.texts),
+      hyper: readKey(IO_KEYS.hyper)
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `bisanat-icerik-${stamp}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 1000);
+    ioMsg('İndirildi. Dosyayı bilgisayarınıza kaydedin.', true);
+  }
+  function applyImported(data){
+    /* her bölümü localStorage'a yaz + bellekteki verilere uygula */
+    if(data.pieces && typeof data.pieces === 'object'){
+      try{ localStorage.setItem(IO_KEYS.pieces, JSON.stringify(data.pieces)); }catch(err){}
+      /* önbelleği temizle ki galeri yeni isimlerle yeniden okusun */
+      Object.keys(piecesCache).forEach(s=> delete piecesCache[s]);
+      Object.keys(pendingPieceEdits).forEach(k=> delete pendingPieceEdits[k]);
+    }
+    if(data.categories && typeof data.categories === 'object'){
+      try{ localStorage.setItem(IO_KEYS.categories, JSON.stringify(data.categories)); }catch(err){}
+      if(typeof loadCatOverrides === 'function') loadCatOverrides();
+    }
+    if(data.texts && typeof data.texts === 'object'){
+      try{ localStorage.setItem(IO_KEYS.texts, JSON.stringify(data.texts)); }catch(err){}
+      PAGE_TEXT_FIELDS.forEach(f=>{
+        const node = document.querySelector(f.el);
+        const val = data.texts[f.key];
+        if(node && typeof val === 'string' && val.trim()) applyPageText(f, node, val);
+      });
+    }
+    if(data.hyper && typeof data.hyper === 'object'){
+      try{ localStorage.setItem(IO_KEYS.hyper, JSON.stringify(data.hyper)); }catch(err){}
+      if(typeof loadHyperOverrides === 'function') loadHyperOverrides();
+    }
+    /* görünümleri tazele */
+    if(typeof updateCatChipLabels === 'function') updateCatChipLabels();
+    renderHyperGrid();
+    if(currentSlug === 'all') renderAll(); else renderCategory(currentSlug);
+    /* açık panel sekmelerini de tazele */
+    buildTextFields(); buildFields(); buildCatFields();
+    if(currentImgSlug) buildImgFieldsForCat(currentImgSlug);
+  }
+  function doImport(file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        if(!data || typeof data !== 'object') throw new Error('geçersiz');
+        applyImported(data);
+        ioMsg('Yüklendi. İçerik güncellendi.', true);
+      }catch(err){
+        ioMsg('Dosya okunamadı — geçerli bir JSON değil.', false);
+      }
+    };
+    reader.onerror = ()=> ioMsg('Dosya okunamadı.', false);
+    reader.readAsText(file);
+  }
+  if(exportBtn)   exportBtn.addEventListener('click', doExport);
+  if(importBtn)   importBtn.addEventListener('click', ()=> importInput && importInput.click());
+  if(importInput) importInput.addEventListener('change', e=>{
+    const f = e.target.files && e.target.files[0];
+    if(f) doImport(f);
+    e.target.value = ''; /* aynı dosyayı tekrar seçebilmek için sıfırla */
+  });
+})();
+</script>
+
+</body>
+</html>
